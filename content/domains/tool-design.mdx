@@ -1,0 +1,131 @@
+import { SubtopicSection } from '@/components/SubtopicSection'
+import { InlinePracticeQ } from '@/components/InlinePracticeQ'
+
+<SubtopicSection domainKey="d2" index={0} title="Tool Description Best Practices">
+
+The quality of your tool definitions directly determines how well Claude uses them. A well-designed tool is one Claude reaches for instinctively at the right moment; a poorly designed tool gets ignored or misused. Tool design is fundamentally about communication: you're writing instructions that Claude reads to understand when, why, and how to use each capability.
+
+**Naming** is the first signal Claude receives. Tool names should follow `snake_case` and use a verb-noun pattern: `search_web`, `read_file`, `create_ticket`, `send_email`. This pattern makes the tool's action immediately apparent. Avoid vague names like `process_data` or `do_thing` — they tell Claude nothing about when to reach for the tool. Each tool should do exactly one thing; if you find yourself writing "and" in the name, split it into two tools.
+
+The **description field is the most critical part** of a tool definition. Its purpose is not to describe what the tool does technically — it's to tell Claude *when* to use it. Compare these two descriptions for a web search tool:
+
+- Poor: "Searches the web using Google's API and returns results."
+- Better: "Use this tool when you need current information not in your training data, to verify facts, or to find documentation for libraries and APIs. Returns up to 10 web results with titles, URLs, and snippets."
+
+The second description tells Claude the decision criteria. Claude selects tools by matching the current situation to tool descriptions, so the description should describe the triggering conditions, not the implementation.
+
+**Parameter design** follows the same principle of clarity. Every parameter needs a description explaining what it is and what values are valid. Optional parameters must be absent from the `required` array — if Claude doesn't need a parameter to successfully call the tool, don't require it. Use specific types (`string`, `integer`, `boolean`) and include `enum` for constrained choices.
+
+Keep your tool set **focused**: too many tools with overlapping purposes confuses Claude, leading to inconsistent tool selection. If two tools do similar things, consolidate them or make their descriptions clearly distinguish the use cases.
+
+<InlinePracticeQ
+  question="What is the most important quality of a tool's description field?"
+  options={["It explains what the tool does technically", "It explains when Claude should use the tool", "It lists all the tool's parameters", "It provides example outputs"]}
+  correct={1}
+  explanation="The description tells Claude WHEN to use the tool — it's how Claude selects the right tool for a task. A description that only explains implementation details won't help Claude know when to invoke it."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d2" index={1} title="Structured Error Responses">
+
+Tool error handling is one of the most overlooked aspects of agent design, yet it's crucial for building agents that recover gracefully from failures. The fundamental principle: **tools should never throw exceptions into the agent loop**. Instead, they should return structured error objects that Claude can read, reason about, and act on.
+
+When a tool throws an unhandled exception, the agent loop typically crashes or produces an unhelpful error message that doesn't give Claude any path forward. When a tool returns a structured error, Claude can evaluate the situation and decide intelligently: retry with different parameters, use a different tool, ask for clarification, or escalate to the user.
+
+A well-designed error response follows a consistent format: `{ "error": "Human-readable message", "code": "MACHINE_READABLE_CODE", "details": "Additional context" }`. The `code` field enables programmatic handling — Claude can recognize `NOT_FOUND` vs `RATE_LIMITED` vs `PERMISSION_DENIED` and respond differently to each.
+
+The error message should be **actionable**. "File not found" is less useful than "File not found: /path/to/file.txt. Check that the path is correct and the file exists." Claude reads this message and uses it to inform its next action. If you return `null` or an empty string on error, Claude has nothing to work with and will likely hallucinate a recovery strategy.
+
+Beyond the structured response, consider **error categories** when designing your tool set:
+- **Retriable errors**: network timeouts, rate limits — Claude should retry with backoff
+- **Input errors**: bad parameters — Claude should reformulate the call
+- **Permission errors**: access denied — Claude should escalate to the user
+- **Fatal errors**: service unavailable — Claude should abort and explain
+
+Including a `"retryable": true/false` field in your error response gives Claude explicit guidance on whether retrying makes sense, preventing futile retry loops on permanent failures.
+
+Never confuse HTTP-level error handling with tool-level error handling. Your tool wrapper should catch HTTP errors, translate them into structured responses, and return them as normal tool results — not as exceptions.
+
+<InlinePracticeQ
+  question="A tool encounters an error. What should it return?"
+  options={["Throw a JavaScript exception", "Return null", "Return a structured JSON object with error details", "Return an empty string"]}
+  correct={2}
+  explanation="Tools should return structured JSON errors so Claude can read them and decide how to proceed — retry, use a different tool, or escalate. Exceptions or null give Claude nothing to work with."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d2" index={2} title="Tool Distribution & Selection">
+
+Controlling which tools Claude uses — and when — is a critical lever for building reliable, predictable agents. The Anthropic API provides fine-grained control through the `tool_choice` parameter, and your tool set design decisions around scope and overlap directly affect the quality of Claude's tool selection.
+
+The `tool_choice` parameter has three modes. The **default** is `{ type: "auto" }`, where Claude decides whether to use a tool based on what the task requires. This is appropriate for general-purpose assistants where you want Claude to have full flexibility. `{ type: "any" }` requires Claude to use at least one tool — useful when you know tool use is always necessary (like a data extraction pipeline). `{ type: "tool", name: "your_tool" }` forces Claude to call a specific named tool, which is how you guarantee structured output schemas are always applied.
+
+The **principle of least privilege** applies directly to tool design: only expose tools an agent actually needs for its task. An agent performing read-only analysis should not have write tools in its tool set. An agent searching documentation should not have Bash access. Restricting the available tools serves two purposes: it reduces the surface area for mistakes and it makes Claude's tool selection more accurate (fewer options means less confusion).
+
+**Tool overlap** is a common antipattern. If you have `search_documents`, `find_document`, and `lookup_document`, Claude will make inconsistent choices between them. Each tool in your set should have a clearly distinct purpose with non-overlapping trigger conditions. When you're tempted to add a new tool, first ask whether an existing tool could be extended or whether the description could be made clearer to cover the new use case.
+
+For **complex workflows**, consider designing different tool sets for different phases. A planning agent might have read-only tools; an execution agent gets write tools. This staged approach with increasing privilege levels aligns with good security practice and makes each agent's behavior more predictable.
+
+<InlinePracticeQ
+  question="You need Claude to always extract data into a structured format using your extract_data tool. Which tool_choice setting should you use?"
+  options={["{ type: 'auto' }", "{ type: 'any' }", "{ type: 'tool', name: 'extract_data' }", "{ type: 'required' }"]}
+  correct={2}
+  explanation="tool_choice: { type: 'tool', name: 'extract_data' } forces Claude to call that specific tool, guaranteeing structured output every time."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d2" index={3} title="MCP Server Configuration">
+
+The **Model Context Protocol (MCP)** is an open standard for connecting Claude to external tools and data sources. Instead of baking tools directly into your API calls, MCP lets you run tool servers separately and connect Claude to them dynamically. This architecture enables reusable tool servers that can be shared across projects and teams.
+
+MCP supports two transport types. **stdio** runs the MCP server as a local subprocess — Claude Code launches the process, communicates with it over stdin/stdout, and the process terminates when the session ends. This is the most secure option because no network socket is exposed. **SSE (Server-Sent Events)** runs the MCP server as an HTTP service, which allows remote connections and multi-client access but requires network-level security considerations.
+
+Configure MCP servers in `~/.claude/settings.json` under the `mcpServers` key:
+
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["server.js"]
+    }
+  }
+}
+```
+
+MCP servers can expose three types of capabilities: **tools** (functions Claude can call), **resources** (data Claude can read, like files or database records), and **prompts** (reusable prompt templates). Tools are the most common use case, but resources enable interesting patterns like dynamic context injection.
+
+**Security considerations** with MCP are important. MCP resources can contain arbitrary content — including content crafted to manipulate Claude's behavior (prompt injection). Treat MCP resource content the same way you'd treat user input: don't blindly trust it. When Claude is about to use a tool from an MCP server, it's good practice to confirm the tool call, especially for write operations.
+
+For local development, always prefer stdio over SSE. For production deployments where multiple Claude instances need to share the same tool server, SSE makes more sense — but add authentication and TLS.
+
+<InlinePracticeQ
+  question="Which MCP transport type is recommended for local development tools that don't need to be shared?"
+  options={["SSE (HTTP)", "stdio", "WebSocket", "gRPC"]}
+  correct={1}
+  explanation="stdio transport runs the MCP server as a local process, which is more secure than HTTP-based SSE since it doesn't expose a network endpoint. Use stdio for local tools."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d2" index={4} title="Built-in Tools">
+
+Claude Code ships with a rich set of built-in tools that cover the most common development tasks. Understanding what each built-in tool is designed for — and when to use one over another — is essential for writing effective prompts and designing custom tool sets that complement rather than duplicate built-in capabilities.
+
+**Bash** is the most powerful and most dangerous built-in tool. It can run any shell command, meaning it can read and write any file, start processes, make network requests, and modify system state. In CI/CD pipelines and agentic workflows, always scope Bash access carefully using `--allowedTools` or PreToolUse hooks.
+
+**Read, Write, and Edit** are targeted file operation tools. Use them instead of Bash when you just need file I/O — they have tighter permission scopes and a cleaner interface. `Edit` is particularly useful because it performs targeted replacements rather than full file rewrites, making it safer for large files.
+
+**Glob and Grep** are the search tools. `Glob` finds files by name pattern (`**/*.ts`, `src/**/*.mdx`). `Grep` searches file *contents* with regex — it's the right tool when you need to find all places a function is imported, all files containing a specific string, or all TypeScript types matching a pattern. While `Bash` with `grep` is functionally equivalent, the built-in `Grep` tool has better permissions handling, works safely with binary files, and provides better output formatting.
+
+**WebFetch and WebSearch** handle internet access. `WebFetch` retrieves a specific URL and processes it. `WebSearch` queries the web. Important limitation: neither can access authenticated pages — no GitHub private repos, no Google Docs behind login, no Jira. For authenticated services, use MCP servers or API-based tools.
+
+**Agent** spawns a subagent with a given prompt and tool set. This is how you implement multi-agent patterns directly in Claude Code. The **Computer** tool enables GUI interaction via vision — clicking, typing, and reading screen content — for tasks that lack programmatic interfaces.
+
+<InlinePracticeQ
+  question="You need to find all TypeScript files that import a specific function. Which built-in tool is most appropriate?"
+  options={["Bash (with grep)", "Glob", "Grep", "WebSearch"]}
+  correct={2}
+  explanation="Grep is the dedicated content search tool — it's built to search file contents with regex patterns. While Bash with grep works, the built-in Grep tool has better permissions, handles binary files safely, and provides a better user experience."
+/>
+</SubtopicSection>

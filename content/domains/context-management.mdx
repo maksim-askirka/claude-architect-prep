@@ -1,0 +1,102 @@
+import { SubtopicSection } from '@/components/SubtopicSection'
+import { InlinePracticeQ } from '@/components/InlinePracticeQ'
+
+<SubtopicSection domainKey="d5" index={0} title="Context Optimization & Positioning">
+
+Claude's context window is not a neutral container where all information is weighted equally. Research and practice both confirm that **position matters**: Claude's attention is strongest at the beginning and end of the context, and weakest in the middle. Understanding this attention distribution is key to structuring prompts that produce consistently high-quality results.
+
+**Stable, high-importance information goes at the top.** System prompts, behavioral rules, and persistent instructions should be at the very beginning of the context. These anchor the entire conversation — they're processed first and set Claude's fundamental operating parameters. Instructions buried in the middle of a long context are more likely to be deprioritized or forgotten as the conversation grows.
+
+**The actual task goes just before the assistant turn.** The user's most recent request, placed at the bottom of the conversation history, gets strong attention because it's at the end. This is where you put the specific thing you want Claude to do right now. Examples and reference material go between the stable system context at the top and the current task at the bottom.
+
+For **long conversations**, audit the message history periodically. Does every message still contribute useful information? Old debugging exchanges, resolved questions, and superseded instructions waste context budget. Trim or summarize them. The `/compact` command in Claude Code does this automatically — it replaces verbose message history with a concise summary, preserving key facts while freeing hundreds of tokens.
+
+**Programmatic summarization** for API-based agents follows the same principle. When `usage.input_tokens` approaches 150,000 (75% of the 200k window), it's time to summarize. Send Claude the conversation history with instructions to produce a compressed summary preserving all decisions, discoveries, and unresolved issues. Replace the verbose history with the summary and continue.
+
+Track token usage with every API response's `usage` object. Building token budget awareness into your agent loop prevents context overflow errors at the worst possible moment — mid-task.
+
+<InlinePracticeQ
+  question="Where should you place the most important stable instructions in a long Claude prompt?"
+  options={["In the middle, for balanced attention", "At the very end, just before the user's request", "At the beginning of the system prompt", "Spread throughout the conversation"]}
+  correct={2}
+  explanation="Claude's attention is strongest at the beginning and end of context. Stable, high-importance instructions (like system behavior rules) should go at the top of the system prompt where they're processed first and anchor the entire conversation."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d5" index={1} title="Escalation & Error Propagation">
+
+In multi-agent architectures, **error handling is a design problem, not just an implementation detail**. The decisions you make about how errors propagate through your agent system determine whether failures are recoverable, visible, and fixable — or silent, cascading, and catastrophic.
+
+The core principle: **subagents must never silently swallow errors.** If a subagent encounters an unexpected condition — a tool call fails, data is missing, an API returns an unexpected status — it must propagate that information up the chain in a structured, actionable form. The orchestrator cannot make good recovery decisions without knowing what went wrong.
+
+A structured error response from a subagent should include at minimum: an error description, a machine-readable error code, and an explicit `"escalate": true` field when the error exceeds what the subagent can resolve on its own. This gives the orchestrator clear signal that human intervention may be needed.
+
+```json
+{
+  "error": "Database query failed: connection timeout after 30s",
+  "code": "DB_TIMEOUT",
+  "escalate": true,
+  "details": "Attempted to query users table; connection pool exhausted"
+}
+```
+
+**`stop_reason: "max_tokens"`** is a special case that always warrants escalation. When an API response returns with max_tokens, it means the model ran out of token budget mid-response — the output is incomplete. This is not a recoverable situation through retrying; it means the context is too large or max_tokens was set too low. The orchestrator should detect this condition explicitly and escalate immediately rather than proceeding with a truncated result.
+
+**Human-in-the-loop gates** should be defined explicitly in your orchestration logic. Before irreversible actions — deleting records, sending emails, making financial transactions, deploying to production — require human confirmation. Don't leave this to Claude's judgment; encode it as a hard constraint in the orchestration flow.
+
+Define `max_retries` at the orchestrator level. If a subagent fails three times, escalate — don't loop forever. The cost of a delayed task is almost always lower than the cost of an infinite retry loop consuming API budget.
+
+<InlinePracticeQ
+  question="A subagent encounters an unexpected error. What should it do?"
+  options={["Retry silently until it succeeds", "Return a structured error object with escalate: true", "Terminate the entire agent pipeline", "Ask the user directly for help"]}
+  correct={1}
+  explanation="Subagents should return structured errors up the chain — never swallow them silently. The orchestrator receives the error and decides whether to retry, use a different approach, or escalate to a human."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d5" index={2} title="Context Degradation & Extended Sessions">
+
+Context degradation is a subtle but important failure mode in long Claude Code sessions. As a session accumulates messages, tool calls, and results, the context window fills with older information that may conflict with newer information, repeat earlier work, or simply consume space that would be better used for current tasks.
+
+The symptoms of context degradation are **behavioral rather than explicit**. Claude doesn't announce "my context is getting full." Instead, you see: Claude repeating a mistake it already corrected two hours ago; Claude ignoring an instruction that was clear earlier in the session; Claude producing outputs that are inconsistent with the coding style established at the session's start; Claude making architectural suggestions that contradict decisions already made. These are the signals.
+
+The root cause is that Claude's attention, while strong at context boundaries, weakens for information buried deep in a long middle section. When the context window is 80–90% full of conversation history, the critical early instructions are still technically "in context" but may be receiving much less attention than fresh instructions.
+
+**Mitigations:**
+
+- **`/compact`**: Run this proactively before the context gets too full, not reactively after degradation appears. A good habit is running `/compact` at natural task boundaries — after completing a feature, before starting a new one.
+- **Fresh sessions for new tasks**: When a task is genuinely new and unrelated to the current session's work, starting fresh is often better than compacting. Fresh sessions also prevent yesterday's debugging context from polluting today's feature work.
+- **Programmatic summarization**: For API-based agents, build context monitoring into the loop and trigger summarization at 70–80% capacity rather than waiting for problems.
+- **Extended thinking**: Note that extended thinking tokens count toward the context budget — for reasoning-heavy tasks, monitor token usage more aggressively.
+
+The 200k context window is generous, but it's not infinite. A session with many large file reads can exhaust it faster than you'd expect. Design your workflows with session length in mind.
+
+<InlinePracticeQ
+  question="What are the first signs that a Claude Code session is experiencing context degradation?"
+  options={["Slower response times", "Claude starts repeating mistakes it previously corrected, or ignoring earlier instructions", "Error messages about token limits", "The session disconnects"]}
+  correct={1}
+  explanation="Context degradation manifests as behavioral inconsistency: Claude repeats errors it already fixed, ignores instructions from earlier in the conversation, or produces outputs inconsistent with established patterns. These are cues to run /compact or start a fresh session."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d5" index={3} title="Human Review & Information Provenance">
+
+Fully autonomous agents are powerful but introduce risks that can be mitigated through thoughtful human-in-the-loop design. The question isn't whether to include human review — it's where in the workflow human review adds the most value and how to structure it so it's efficient rather than disruptive.
+
+**The principle is simple: any irreversible action requires human confirmation.** File writes, database deletes, API calls that send emails or charge credit cards, deployments to production — these are the gates where human review belongs. The cost of a 10-second human approval is trivial compared to the cost of an irreversible mistake. Design these gates explicitly into your agent architecture; don't rely on Claude's discretion.
+
+In Claude Code, the **`AskUserQuestion` tool** is the mechanism for explicit confirmation. When Claude is about to take an action it's uncertain about or that crosses a defined threshold, it pauses and presents the question to the user. This is also how Claude should handle ambiguous cases: ask, don't assume.
+
+**PreToolUse hooks** are a more automated enforcement layer. A hook on the `Bash` tool can intercept commands matching `rm -rf`, `DROP TABLE`, or `git push --force` and either block them outright (exit code 2) or route them to a human approval queue before allowing execution.
+
+**Information provenance** — knowing what information Claude used to make a decision — is critical for audits and debugging. Ask Claude to cite sources when producing analysis. Have Claude explicitly state which files it read before making a recommendation. Log all tool calls with their inputs and outputs. This audit trail is invaluable when you need to understand why an agent made a specific decision.
+
+For production agentic systems, implement a **structured audit log**: every tool call, its parameters, its result, and the timestamp. This lets you replay agent decisions, identify where errors entered the pipeline, and demonstrate compliance. The overhead is minimal; the value in debugging is immense.
+
+<InlinePracticeQ
+  question="You're building an agentic system that can delete database records. When should human review be required?"
+  options={["Never — the agent should be fully autonomous", "Only when the agent is uncertain", "Before any irreversible write operations, always", "Only in production, not development"]}
+  correct={2}
+  explanation="Human review checkpoints should always be placed before irreversible actions like deletes, external API calls, or deploys. The cost of a human approval step is trivial compared to the cost of an irreversible mistake."
+/>
+</SubtopicSection>

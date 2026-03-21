@@ -1,0 +1,127 @@
+import { SubtopicSection } from '@/components/SubtopicSection'
+import { InlinePracticeQ } from '@/components/InlinePracticeQ'
+
+<SubtopicSection domainKey="d1" index={0} title="Agentic Loops & Core API">
+
+The foundation of every Claude-powered agent is the **agentic loop**: a structured conversation between your code and the Claude API that continues until the task is complete. Understanding how this loop works at the API level is essential for building reliable agents.
+
+Every API request sends two core arrays: `tools` (describing what Claude can do) and `messages` (the conversation so far). Claude reads both and decides what to do next. When Claude wants to run a tool, it signals this by returning with `stop_reason: "tool_use"`. The response's `content` array contains a block with `type: "tool_use"`, which includes an `id` (for correlating results), a `name` (which tool to call), and an `input` object (the arguments).
+
+Your agent code must then execute that tool and feed the result back. You append two messages: first an `assistant` role message containing the tool_use block Claude just returned, then a `user` role message containing a `tool_result` block with the `tool_use_id`, and the result content. The loop resumes when you call the API again with the updated message history.
+
+The loop ends when Claude returns `stop_reason: "end_turn"` — meaning it has a final answer — or `stop_reason: "max_tokens"`, which means the response hit the token limit before Claude could finish. Always set `max_tokens` to at least 4096 for agentic work; a value that's too low will truncate mid-thought and break the loop.
+
+```typescript
+async function runAgentLoop(userMessage: string): Promise<string> {
+  const messages: MessageParam[] = [{ role: 'user', content: userMessage }]
+
+  while (true) {
+    const response = await client.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 4096,
+      tools: TOOLS,
+      messages,
+    })
+
+    if (response.stop_reason === 'end_turn') {
+      return response.content.find((b) => b.type === 'text')?.text ?? ''
+    }
+
+    if (response.stop_reason === 'tool_use') {
+      messages.push({ role: 'assistant', content: response.content })
+      const toolResults = await executeTools(response.content)
+      messages.push({ role: 'user', content: toolResults })
+    }
+  }
+}
+```
+
+A common mistake is forgetting that both the assistant's tool_use message and the user's tool_result message must be added to the conversation. Omitting either causes a validation error or confused Claude behavior. Another pitfall: handling multiple tool calls in a single response. Claude can return multiple tool_use blocks in one turn; your `executeTools` function must handle all of them and return an array of tool_result blocks.
+
+<InlinePracticeQ
+  question="Which stop_reason indicates Claude wants to invoke a tool?"
+  options={["end_turn", "tool_use", "max_tokens", "stop_sequence"]}
+  correct={1}
+  explanation="stop_reason='tool_use' means Claude's response contains a tool_use content block. The agent must execute the tool and return a tool_result before continuing."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d1" index={1} title="Multi-Agent Orchestration">
+
+Single-agent loops work well for focused tasks, but complex workflows benefit from **multi-agent architectures** where an orchestrator coordinates multiple specialized subagents. The orchestrator is responsible for decomposing a large task into subtasks, dispatching subagents to handle each one, and aggregating their outputs into a coherent result.
+
+The key design principle is **subagent isolation**: each subagent should receive only the context needed for its specific subtask, not the full conversation history. This approach reduces token costs, improves focus, and prevents information from one task leaking into another. A subagent analyzing database performance doesn't need to know about the UI redesign subtask happening in parallel.
+
+**Parallel execution** is where multi-agent architectures truly shine. When subtasks are independent — meaning their outputs don't depend on each other — you can dispatch multiple subagents simultaneously. Each runs its own tool loop, and the orchestrator waits for all of them to complete before aggregating results. This can dramatically reduce wall-clock time for complex workflows.
+
+In Claude Code specifically, the `Agent` tool spawns subagents with a given prompt and tool set. For parallel work, you can use `run_in_background` to fire off multiple Agent tasks without waiting for each to complete. The orchestrator subagents run concurrently and the results are collected when all finish.
+
+Subagent results should be **structured and explicit**. Returning a JSON object with well-defined fields makes aggregation straightforward. If a subagent fails, it should return a structured error (not an exception) so the orchestrator can decide whether to retry, reassign, or escalate.
+
+One challenge with orchestration is **managing context growth**. Each subagent conversation is a separate API call chain, but the orchestrator's own context grows as it receives results. Design subagent return values to be concise summaries, not verbose transcripts. The orchestrator synthesizes; subagents execute.
+
+A common pattern is the **map-reduce agent**: the orchestrator splits input into chunks, dispatches a subagent per chunk (map phase), then synthesizes the results (reduce phase). This scales well for large-document analysis, codebase audits, and batch transformations.
+
+<InlinePracticeQ
+  question="In a multi-agent system, what is the recommended approach for providing context to each subagent?"
+  options={["Pass the full conversation history to maximize context", "Give each subagent only the context needed for its specific subtask", "Share a global context object that all subagents can read and write", "Let subagents request additional context on demand"]}
+  correct={1}
+  explanation="Subagents should receive only the context needed for their specific task. This reduces token costs, improves focus, and prevents information leakage between independent subtasks."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d1" index={2} title="Hooks & Programmatic Enforcement">
+
+Claude Code **hooks** are shell commands that run at defined lifecycle points in every Claude Code session. They give you programmatic control over what Claude is allowed to do — and they enforce those constraints regardless of what the user asks Claude to do. Hooks are your primary mechanism for policy enforcement at the agentic layer.
+
+Hooks are defined in `~/.claude/settings.json` under the `"hooks"` key. There are five hook types: `PreToolUse` (runs before any tool call), `PostToolUse` (runs after a tool call completes), `UserPromptSubmit` (runs when the user submits a message), `Stop` (runs when the session ends), and `Notification` (runs on certain events). For security enforcement, `PreToolUse` is the most important.
+
+Each hook receives a JSON context via stdin — for a `PreToolUse` hook on `Bash`, this includes the command Claude is about to run. The hook runs as a shell command and communicates back through its **exit code**: exit code 0 means allow, exit code 1 means block and return stdout to Claude (so Claude can adapt), and exit code 2 means block and show stdout to the user as an error message.
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'push.*--force.*main'; then echo 'Force push to main is not allowed'; exit 2; fi"
+      }]
+    }]
+  }
+}
+```
+
+In the example above, if Claude attempts a `git push --force` targeting main, the hook exits with code 2, and the user sees "Force push to main is not allowed" immediately — preventing the dangerous command.
+
+Practical use cases beyond blocking commands include: enforcing code formatting (run prettier and exit 1 if changes were made), logging all tool calls to an audit file, requiring confirmation before network requests, and blocking writes to sensitive directories. Hooks run synchronously before the tool executes, making them genuinely preventative rather than reactive.
+
+<InlinePracticeQ
+  question="A PreToolUse hook exits with code 2. What happens?"
+  options={["Claude retries the tool call", "The tool call is blocked and the user sees the hook's stdout message", "The tool call is blocked and Claude sees the hook's stdout as context", "The process terminates"]}
+  correct={1}
+  explanation="Exit code 2 blocks the tool call and surfaces the hook's stdout to the USER (not Claude) as a visible error message. Exit code 1 blocks the tool call and returns the output to Claude."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d1" index={3} title="Session Management & Workflows">
+
+Effective Claude Code usage depends on understanding how sessions work, how to resume them, and how to manage the context window across long-running workflows. A session is more than a conversation — it's the accumulation of context, tool results, and decisions that Claude builds up over time.
+
+The `--continue` flag resumes the most recent session. This is the quickest way to pick up where you left off without having to re-explain the project context. If you need to return to a specific older session, `--resume <session-id>` accepts the session identifier from the session list. Session IDs are logged in `~/.claude/sessions/`.
+
+Claude's context window is approximately 200,000 tokens. In long sessions working on large codebases, you can approach this limit. Symptoms include slower responses, Claude losing track of earlier decisions, or explicit `max_tokens` errors. The primary mitigation is `/compact`, a built-in command that summarizes the conversation history and replaces verbose exchanges with a concise summary, freeing up context space while preserving the key facts.
+
+`CLAUDE.md` files are your primary mechanism for **persistent context across sessions**. Because `CLAUDE.md` is injected automatically at session start, project conventions, architecture overviews, and key commands don't need to be explained every session. This makes `CLAUDE.md` a force multiplier — the investment in writing it pays back on every session restart.
+
+**Plan mode** (toggled with `Shift+Tab`) changes how Claude works. Instead of immediately writing code, Claude reads files and develops a plan first, using the `ExitPlanMode` tool when it's ready to present the plan for your approval. This is invaluable for complex features or refactors where you want to review the approach before any changes are made.
+
+For **batch processing and CI/CD**, `claude -p "prompt" --output-format json` runs Claude non-interactively and outputs structured JSON. This enables automated workflows: nightly code reviews, PR description generation, or test coverage analysis on push.
+
+<InlinePracticeQ
+  question="You want to continue yesterday's Claude Code session on a large codebase. The conversation is very long. What should you do before running more tasks?"
+  options={["Start a new session — old sessions can't be resumed", "Resume with --continue and run /compact to compress the context", "Manually summarize the conversation in a text file", "Increase the max_tokens setting"]}
+  correct={1}
+  explanation="Use --continue to resume the last session, then run /compact to compress long conversation history. This keeps session continuity while freeing context window space for new work."
+/>
+</SubtopicSection>

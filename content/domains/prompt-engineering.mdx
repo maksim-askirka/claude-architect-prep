@@ -1,0 +1,131 @@
+import { SubtopicSection } from '@/components/SubtopicSection'
+import { InlinePracticeQ } from '@/components/InlinePracticeQ'
+
+<SubtopicSection domainKey="d4" index={0} title="Explicit Criteria & Instruction Design">
+
+The most fundamental prompt engineering skill is clarity: giving Claude precise, unambiguous instructions that leave no room for misinterpretation. Claude is a powerful language model, but it can only do what you describe — and the more precisely you describe the task, the more reliably Claude will produce what you actually need.
+
+**Specificity always wins over brevity** for complex tasks. "Summarize this article" leaves enormous room for interpretation — how long? What format? For what audience? "Write a 3-paragraph summary of this article for a non-technical audience, in plain language, covering the main finding, the methodology, and the practical implications" is far more actionable. Add constraints explicitly: output format, length, audience, tone, scope.
+
+**XML tags** are the recommended structure for complex prompts because Claude is specifically trained to parse them. Wrapping distinct sections in semantic tags keeps them logically separated in Claude's processing:
+
+- `<context>`: background information Claude needs
+- `<instructions>`: what you want Claude to do
+- `<examples>`: few-shot demonstrations
+- `<output_format>`: exactly how you want the result structured
+
+Without this structure, a long prompt becomes a wall of text where instructions, context, and examples blur together. With XML tags, each section's purpose is unambiguous.
+
+**Separate concerns**: don't mix persona, task, and format requirements in a single paragraph. If you want Claude to be a code reviewer, explain the persona in one section, the task in another, and the output format in a third. Mixing them forces Claude to extract information from a tangled blob.
+
+For tasks requiring reasoning, **chain-of-thought prompting** dramatically improves accuracy. "Think step by step before answering" or wrapping the reasoning phase in `<thinking>` tags encourages Claude to work through the problem explicitly before committing to an answer. For complex math, logic, or multi-step analysis, this often makes the difference between a correct and incorrect result.
+
+**Avoid negatives where possible**: "Don't use jargon" is weaker than "Use plain language a high school student can understand." Positive instructions are more directly actionable.
+
+<InlinePracticeQ
+  question="Which XML tag structure is recommended for organizing complex prompts?"
+  options={["<prompt><content>...</content></prompt>", "<context>, <instructions>, <examples>, <output_format>", "<system>, <user>, <assistant>", "<input>, <output>, <format>"]}
+  correct={1}
+  explanation="Using semantic XML tags like <context>, <instructions>, <examples>, and <output_format> helps Claude parse complex prompts correctly. These tags separate different aspects of the prompt and make the structure explicit."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d4" index={1} title="Few-Shot Prompting">
+
+Few-shot prompting is the practice of including 2–5 examples of input–output pairs directly in your prompt. Rather than describing the transformation you want in words, you demonstrate it. Claude learns the pattern from your examples and applies it to the new input. For tasks with specific formatting requirements, nuanced judgments, or domain-specific conventions, few-shot prompting often outperforms elaborate verbal descriptions.
+
+The mechanics are simple: provide examples in a consistent format, then present the actual input. The most common structure wraps each example in tags:
+
+```
+<example>
+  <input>The quarterly revenue grew 12% year-over-year to $4.2B.</input>
+  <output>{"metric": "revenue", "change": "+12%", "value": "$4.2B", "period": "quarterly"}</output>
+</example>
+```
+
+Each example should **match the target format exactly**. If your output should be JSON without markdown fences, your examples should be JSON without markdown fences. If indentation matters, keep it consistent. Claude mirrors the format of its examples, so inconsistency in your examples produces inconsistency in outputs.
+
+**Coverage matters more than quantity**. Two to five high-quality examples that cover the important edge cases are more effective than ten examples that all demonstrate the same simple case. Think about what variations Claude will encounter: empty inputs, inputs with special characters, inputs that touch ambiguous cases. Cover those in your examples.
+
+**Quality over quantity** is the governing principle. A single perfect example with a clear, representative input-output pair does more work than five mediocre examples. Spend time crafting examples where the input is representative of real inputs and the output is exactly what you want.
+
+**Position your examples** after the instructions (so Claude understands the task first) but before the actual input to be processed. The canonical order is: system prompt → task instructions → examples → actual input to process. This ordering ensures Claude understands the goal before seeing the demonstrations, and the demonstrations are fresh in memory when processing the real input.
+
+For very long examples, use a brief description instead of full text: `<example><input>Long legal document with 50 clauses</input><output>{"clauses": 50, "issues_found": 3, ...}</output></example>`. The structure communicates the pattern even if the content is abbreviated.
+
+<InlinePracticeQ
+  question="Where should few-shot examples be positioned in a prompt?"
+  options={["At the very beginning, before instructions", "After instructions, before the actual input", "After the actual input", "Anywhere — position doesn't matter"]}
+  correct={1}
+  explanation="Few-shot examples should come after the instructions (so Claude understands the task first) but before the actual input to be processed. This ordering: system prompt → instructions → examples → actual input."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d4" index={2} title="Tool Use for Structured Output">
+
+Getting Claude to produce reliable structured output — JSON that matches a schema, always, without prose preamble or markdown fences — is one of the most common challenges in production AI systems. The naive approach of "Please return your answer as JSON" works sometimes but fails in exactly the cases where reliability matters most. The correct approach uses **tool use as a structured output mechanism**.
+
+The pattern works like this: define your desired output schema as a tool with no actual side effects. Instead of "call this tool to do something," you're defining "call this tool to return data." Then set `tool_choice: { type: "tool", name: "your_tool_name" }` to force Claude to call it. Claude's response will contain a `tool_use` content block whose `input` field is a JSON object **validated against your schema**.
+
+For example, to extract product information from a description:
+
+```json
+{
+  "name": "extract_product",
+  "description": "Extract structured product information from text",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" },
+      "price": { "type": "number" },
+      "category": { "type": "string", "enum": ["electronics", "clothing", "food"] }
+    },
+    "required": ["name", "price", "category"]
+  }
+}
+```
+
+With `tool_choice` forcing this tool, Claude must produce a JSON object matching this schema. You get clean JSON — no "Here is the extracted data:" preamble, no markdown ```json fences, no "I hope this helps!" suffix. Parse `response.content[0].input` directly.
+
+The **`enum` constraint** is particularly valuable. Constrained string choices are enforced at the schema level — Claude cannot return `"Electronics"` when the enum specifies `"electronics"`. This eliminates case normalization bugs and invalid category values.
+
+The advantage over asking Claude to "return JSON" is **schema validation by construction**. Asking for JSON gets you text that looks like JSON but might have trailing commas, comments, or missing fields. Tool use gets you valid JSON that matches your schema, guaranteed.
+
+Don't add the tool to your actual tool set if you don't want Claude accidentally calling it in the wrong context. Use it only in the specific prompts where you need structured output.
+
+<InlinePracticeQ
+  question="Why is using tool_use for structured output better than asking Claude to 'return JSON'?"
+  options={["It's faster", "The output is guaranteed to match the schema, with no markdown fences or explanation text", "It uses fewer tokens", "Claude is more creative with tool use"]}
+  correct={1}
+  explanation="When you force Claude to call a tool, the input field is validated against the JSON schema. You get clean JSON with no 'Here is the JSON:' preamble, no markdown code fences, and no schema violations."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d4" index={3} title="Validation-Retry Loops & Multi-Pass Review">
+
+Even well-designed prompts sometimes produce outputs that fail validation — wrong format, missing fields, incorrect values. The right response is not to accept the failure or blindly repeat the prompt, but to implement a **validation-retry loop** that feeds specific error information back to Claude for targeted correction.
+
+The basic loop: generate → validate → if valid, done; if invalid, re-prompt with the error → repeat. The key is what goes in the retry prompt. A retry that just says "Please try again" gives Claude no new information. An effective retry prompt contains three things: the failed output (so Claude can see what went wrong), the specific validation error, and a targeted request to fix just that issue.
+
+```
+The previous response failed validation:
+Output: {"name": "Widget", "price": "19.99", "category": "gadgets"}
+Error: price must be a number (not a string), category must be one of: electronics, clothing, food
+Please return the corrected JSON only.
+```
+
+This is dramatically more effective than repeating the full original prompt, because Claude can see exactly what's wrong and fix it precisely. **Don't re-send the full context on retry** — the original instructions are already in the conversation history. Focus the retry prompt entirely on the specific failure.
+
+**Limit retries to 3 attempts**. If Claude hasn't produced a valid output after three targeted retry prompts, the issue is likely structural — a poorly designed schema, an ambiguous prompt, or an edge case in the input data that needs human attention. On persistent failure, surface the error to a human rather than continuing to loop.
+
+**Multi-pass review** applies the same principle to quality rather than validity. Instead of asking Claude to produce a perfect output in one shot, use a draft → review → revise pattern. First pass: produce a draft. Second pass: critique the draft specifically ("identify weaknesses in the argument"). Third pass: revise based on the critique. Each pass builds on the previous one, and the result is typically far better than a single-pass prompt.
+
+This pattern works especially well for writing, code review, security analysis, and any task where quality criteria are complex and hard to specify exhaustively upfront.
+
+<InlinePracticeQ
+  question="Claude's output fails schema validation. What should your retry prompt include?"
+  options={["The full original prompt repeated", "The failed output, the specific validation error, and a request to fix just that issue", "Only 'Please try again'", "A completely different approach"]}
+  correct={1}
+  explanation="An effective retry prompt includes: (1) the failed output so Claude can see what went wrong, (2) the specific validation error, and (3) a targeted request to fix just that issue. Don't re-send the full context — focus on the specific problem."
+/>
+</SubtopicSection>

@@ -1,0 +1,122 @@
+import { SubtopicSection } from '@/components/SubtopicSection'
+import { InlinePracticeQ } from '@/components/InlinePracticeQ'
+
+<SubtopicSection domainKey="d3" index={0} title="CLAUDE.md Hierarchy & Configuration">
+
+`CLAUDE.md` is Claude Code's persistent memory system — a set of markdown files that are automatically injected into every session, giving Claude the context it needs about your project without requiring you to explain it each time. Understanding the hierarchy and how to write effective `CLAUDE.md` files is one of the highest-leverage skills for Claude Code power users.
+
+There are **three levels** in the `CLAUDE.md` hierarchy, each scoped to a different level of your environment:
+
+1. **Global** (`~/.claude/CLAUDE.md`): Applied to every Claude Code session, regardless of project. Use it for personal conventions, preferred code style, and tools you always use.
+2. **Project root** (`<project-root>/CLAUDE.md`): Applied to all sessions within this project. Use it for project overview, tech stack, architecture patterns, build commands, and deployment steps.
+3. **Subdirectory** (`<subdir>/CLAUDE.md`): Applied when Claude is working within that directory. Use it for service-specific conventions, scoped rules, or module-specific context.
+
+All three levels are loaded simultaneously and **merged**, with more specific files taking precedence over less specific ones. A subdirectory `CLAUDE.md` rule overrides the project root rule for the same area; the project root overrides the global config. This lets you set defaults globally and override them per-project or per-directory.
+
+What to put in a project `CLAUDE.md`:
+- Project purpose in 1–2 sentences
+- Tech stack and versions
+- How to run tests (`npm test`), build (`npm run build`), and start the dev server
+- Coding conventions: tabs vs spaces, naming patterns, import ordering
+- What NOT to do: directories that are off-limits, patterns to avoid
+- Key architectural decisions that Claude should know about
+
+Keep `CLAUDE.md` concise. Every character in `CLAUDE.md` costs context window tokens on every session. A 10,000-token `CLAUDE.md` means 10,000 fewer tokens available for actual work. Aim for maximum signal, minimum noise. Use `@import other-file.md` syntax to split large configs into focused files without bloating the main file.
+
+<InlinePracticeQ
+  question="A project CLAUDE.md and a subdirectory CLAUDE.md both define instructions for the same area. Which takes precedence?"
+  options={["The global ~/.claude/CLAUDE.md", "The project-root CLAUDE.md", "The subdirectory CLAUDE.md", "They are merged with equal priority"]}
+  correct={2}
+  explanation="More specific (closer to the working directory) CLAUDE.md files take precedence. The subdirectory CLAUDE.md overrides the project root CLAUDE.md for that directory."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d3" index={1} title="Custom Commands & Skills">
+
+Custom commands and skills are how you encode reusable workflows into Claude Code. Instead of typing out the same multi-step instructions for common tasks, you define them once and invoke them with a slash command or let Claude trigger them automatically based on context.
+
+**Commands** are markdown files stored in `.claude/commands/<name>.md` within your project (project-scoped) or `~/.claude/commands/<name>.md` (global). When you type `/name` in a Claude Code session, the contents of that file are injected as a prompt. The file becomes the instructions Claude follows for that workflow.
+
+For example, a `.claude/commands/review-pr.md` might contain:
+
+```markdown
+Review the current git diff for:
+1. Security vulnerabilities
+2. Performance issues
+3. Test coverage gaps
+4. Code style consistency with CLAUDE.md conventions
+
+Output a structured report with severity levels.
+```
+
+Typing `/review-pr` instantly kicks off that workflow without you having to type it out.
+
+**Skills** go further. A skill is a richer definition that includes a `description` field. This description tells Claude *when to proactively trigger the skill* — not just when explicitly invoked. If your deployment skill's description says "Use when the user asks to deploy, ship, release, or publish to production," Claude will suggest or invoke it automatically when it detects deployment-related requests.
+
+The `Skill` tool is how Claude programmatically invokes skills within an agentic loop. An orchestrator agent can detect that a subtask matches a skill's description and invoke it via the `Skill` tool without explicit user direction.
+
+**Command organization** matters at scale. Group related commands in subdirectories (`.claude/commands/test/unit.md`, `.claude/commands/test/integration.md`). The slash command path follows the directory structure. For global commands that apply across all projects — like a personal code review style or a standard commit message format — store them in `~/.claude/commands/`.
+
+<InlinePracticeQ
+  question="You want Claude to proactively suggest using your deployment workflow when it detects deployment-related tasks. What should you create?"
+  options={["A slash command in .claude/commands/", "A skill with a description field that describes when to trigger it", "A CLAUDE.md entry", "A PreToolUse hook"]}
+  correct={1}
+  explanation="Skills with description fields allow Claude to proactively invoke them when the description matches the current task. Slash commands require explicit user invocation."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d3" index={2} title="Plan Mode & Iterative Refinement">
+
+**Plan mode** is Claude Code's safeguard against premature action. In standard mode, Claude reads files and writes code in interleaved steps as it works through a task. In plan mode, Claude reads, thinks, and plans — but does not write a single line of code until you approve the approach. For complex tasks, this is one of the most important features Claude Code offers.
+
+Toggle plan mode with `Shift+Tab`. The visual indicator in the UI changes to show you're in plan mode. In this mode, Claude has access to read tools (Glob, Grep, Read, Bash for read-only commands) but will not call write tools like Write, Edit, or Bash commands that modify files.
+
+When Claude has gathered enough context and is ready to present its approach, it uses the **`ExitPlanMode` tool**. This is not something you trigger — Claude triggers it when it believes it understands the task well enough to propose a concrete implementation plan. You then see the full plan and can:
+- Approve it (Claude enters execution mode and implements the plan)
+- Request changes ("Add error handling for the network failure case")
+- Ask questions ("Why did you choose that approach over X?")
+- Reject it entirely
+
+The **`AskUserQuestion` tool** is Claude's mechanism for requesting clarification mid-plan. If Claude encounters a decision point — "Should this be a new component or extend the existing one?" — it can pause and ask rather than guess. This is preferable to Claude making an assumption that invalidates the entire plan.
+
+Plan mode is most valuable for:
+- **Multi-file refactors**: where a wrong first step causes cascading changes
+- **New features with architectural implications**: where approach matters as much as implementation
+- **Unfamiliar codebases**: where Claude needs to read more before writing
+- **High-stakes changes**: deploys, database migrations, security-sensitive code
+
+The investment in reviewing a plan before execution pays back in dramatically fewer iteration cycles.
+
+<InlinePracticeQ
+  question="In plan mode, Claude reads several files and is ready to present its implementation approach. Which tool does it use to exit plan mode?"
+  options={["ExitPlanMode", "AskUserQuestion", "Bash with 'exit'", "It exits automatically after reading files"]}
+  correct={0}
+  explanation="Claude uses the ExitPlanMode tool when it's ready to present its plan for user approval. The user sees the plan and can approve or request changes before any code is written."
+/>
+</SubtopicSection>
+
+<SubtopicSection domainKey="d3" index={3} title="CI/CD Integration & Batch Processing">
+
+Claude Code is not just an interactive tool — it's a programmable component you can embed in CI/CD pipelines, scheduled jobs, and automated workflows. The CLI's headless mode and structured output options make this integration straightforward.
+
+The `--headless` flag (or `CLAUDE_CODE_HEADLESS=true` environment variable) disables the interactive UI and runs Claude purely as a command-line tool. Combined with `-p` (short for `--print`), you get a single-shot invocation: `claude -p "Review this PR for security issues" --output-format json`. Claude processes the prompt, runs its tools, produces a result, and exits. No interactive session, no waiting for user input.
+
+`--output-format json` structures the output as a JSON object with `result`, `cost`, `tokens`, and `tool_calls` fields. This makes Claude's output machine-parseable for downstream processing — feed the result to another tool, store it in a database, or post it as a PR comment.
+
+**`--allowedTools`** is critical for CI/CD security. In a CI pipeline, you might want Claude to be able to read files and search the codebase but *not* write files or run arbitrary shell commands. `--allowedTools Read,Glob,Grep` enforces this. Even if the prompt or the codebase content tries to convince Claude to use other tools, `--allowedTools` prevents it at the runtime level.
+
+Common CI/CD use cases:
+- **Automated PR review**: trigger on pull_request events, run Claude with `--allowedTools Read,Glob,Grep` and a review prompt
+- **Test generation**: after new code lands, run Claude to generate test cases for uncovered functions
+- **Security scanning**: daily run with a security-focused prompt and structured JSON output to feed into alerting
+- **Documentation updates**: detect code changes and regenerate affected documentation sections
+
+The key principle for CI integration: **always use `--allowedTools` to enforce the principle of least privilege**. A CI Claude that can only read is far safer than one with full Bash access, even if you trust the workflow.
+
+<InlinePracticeQ
+  question="You're running Claude Code in a CI pipeline that should only be able to read files, not write or execute commands. How do you enforce this?"
+  options={["Set CLAUDE_CODE_HEADLESS=true", "Use --allowedTools to specify only Read, Glob, and Grep", "Remove the Bash tool from settings.json", "Use --print mode which disables writing"]}
+  correct={1}
+  explanation="--allowedTools lets you specify exactly which tools the CI pipeline can use, enforcing the principle of least privilege. The pipeline can read and search but cannot write files or run shell commands."
+/>
+</SubtopicSection>
