@@ -15,7 +15,7 @@ Free, open-access exam prep for the [Claude Certified Architect – Foundations]
 ## Tech stack
 
 | Layer | Choice |
-|-------|--------|
+| ----- | ------ |
 | Framework | Next.js 15 (App Router) |
 | Styling | Tailwind CSS |
 | Font | IBM Plex Mono |
@@ -51,7 +51,7 @@ Set `SITE_URL` environment variable in Vercel dashboard to your production URL f
 ## Exam facts
 
 | Field | Value |
-|-------|-------|
+| ----- | ----- |
 | Format | Multiple choice + scenario-based |
 | Scenarios | 4 of 6 randomly selected |
 | Passing score | 720 / 1000 |
