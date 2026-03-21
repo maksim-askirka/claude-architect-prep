@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design — Mono Editorial</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #f5f4f0;
+  --bg2:     #eeecea;
+  --text:    #2a2a2a;
+  --muted:   #8a8a8a;
+  --border:  #dddbd6;
+  --teal:    #2cb67d;
+  --teal-bg: #e8f8f0;
+  --mono:    'IBM Plex Mono', monospace;
+}
+
+body {
+  font-family: var(--mono);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ─── NAV ─── */
+nav {
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.nav-logo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.02em;
+}
+.nav-links { display: flex; gap: 24px; }
+.nav-links a {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: .02em;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--teal);
+  text-decoration: none;
+  border: 1px solid var(--teal);
+  padding: 6px 14px;
+  letter-spacing: .03em;
+}
+
+/* ─── HERO ─── */
+.hero {
+  padding: 64px 48px 48px;
+  max-width: 900px;
+}
+.hero-eyebrow {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  color: var(--text);
+  margin-bottom: 18px;
+}
+.hero h1 span { color: var(--teal); }
+.hero p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 520px;
+  margin-bottom: 28px;
+}
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.stat-item .num {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat-item .label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: .03em;
+}
+
+/* ─── DIVIDER ─── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 48px;
+}
+
+/* ─── DOMAIN LIST ─── */
+.section { padding: 40px 48px; }
+.section-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.domain-row {
+  display: flex;
+  gap: 32px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+  cursor: pointer;
+}
+.domain-row:first-of-type { padding-top: 0; }
+.domain-row:hover .domain-link { color: var(--teal); }
+
+.domain-meta {
+  width: 140px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.domain-num {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+}
+.domain-pct {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+.domain-pct-label {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.domain-content { flex: 1; }
+.domain-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -.01em;
+}
+.domain-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 10px;
+  max-width: 560px;
+}
+.domain-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag {
+  font-size: 10px;
+  background: var(--bg2);
+  color: var(--muted);
+  padding: 3px 8px;
+  letter-spacing: .03em;
+}
+
+.domain-action { padding-top: 4px; }
+.domain-link {
+  font-size: 12px;
+  color: var(--teal);
+  text-decoration: none;
+  letter-spacing: .03em;
+}
+.domain-progress-wrap { margin-top: 8px; }
+.domain-progress-bar {
+  height: 2px;
+  background: var(--border);
+  width: 80px;
+  overflow: hidden;
+}
+.domain-progress-fill { height: 100%; background: var(--teal); }
+.domain-progress-label { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+/* ─── WEEK PLAN ─── */
+.week-row {
+  display: flex;
+  gap: 32px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+}
+.week-num-col {
+  width: 140px;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  letter-spacing: .04em;
+}
+.week-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  flex: 1;
+}
+.week-title.done { color: var(--muted); text-decoration: line-through; }
+.week-sub { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.week-check {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--teal);
+  font-weight: 700;
+}
+.week-check.done { background: var(--teal); border-color: var(--teal); color: white; }
+
+/* ─── TWO-COL ─── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+.col-panel { background: var(--bg); padding: 40px 48px; }
+
+/* ─── PRACTICE CARD ─── */
+.q-card {
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin-bottom: 12px;
+  background: white;
+}
+.q-domain-tag {
+  font-size: 10px;
+  color: var(--teal);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.q-text { font-size: 13px; line-height: 1.6; color: var(--text); margin-bottom: 14px; }
+.q-options { display: flex; flex-direction: column; gap: 6px; }
+.q-opt {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.q-opt:hover { border-color: var(--teal); color: var(--text); }
+.q-opt.correct { border-color: var(--teal); background: var(--teal-bg); color: var(--teal); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">claude_architect/</div>
+  <div class="nav-links">
+    <a href="#">domains</a>
+    <a href="#">practice</a>
+    <a href="#">cheatsheet</a>
+    <a href="#">study_plan</a>
+    <a href="#">scenarios</a>
+  </div>
+  <a class="nav-cta" href="#">register_for_exam →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Claude Certified Architect · Foundations</div>
+  <h1>Pass the exam.<br><span>Own the stack.</span></h1>
+  <p>Free study guide, 33+ practice questions, and a 12-week plan for the Claude Certified Architect – Foundations exam. No signup. No paywall.</p>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="num">5</div>
+      <div class="label">exam domains</div>
+    </div>
+    <div class="stat-item">
+      <div class="num">33+</div>
+      <div class="label">practice questions</div>
+    </div>
+    <div class="stat-item">
+      <div class="num">12</div>
+      <div class="label">week study plan</div>
+    </div>
+    <div class="stat-item">
+      <div class="num">720</div>
+      <div class="label">passing score</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- DOMAINS -->
+<div class="section">
+  <div class="section-header">Exam Domains</div>
+
+  <div class="domain-row">
+    <div class="domain-meta">
+      <div class="domain-num">DOMAIN_01</div>
+      <div class="domain-pct">25%</div>
+      <div class="domain-pct-label">of exam</div>
+    </div>
+    <div class="domain-content">
+      <div class="domain-title">Agentic Architecture & Orchestration</div>
+      <div class="domain-desc">Design and implement agentic systems using Claude's Agent SDK. Covers agentic loops, multi-agent orchestration, hooks, workflows, and session management.</div>
+      <div class="domain-tags">
+        <span class="tag">Agentic Loops</span>
+        <span class="tag">Multi-Agent</span>
+        <span class="tag">Hooks</span>
+        <span class="tag">Sessions</span>
+      </div>
+    </div>
+    <div class="domain-action">
+      <a class="domain-link" href="#">study →</a>
+      <div class="domain-progress-wrap">
+        <div class="domain-progress-bar"><div class="domain-progress-fill" style="width:100%;"></div></div>
+        <div class="domain-progress-label">complete</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="domain-row">
+    <div class="domain-meta">
+      <div class="domain-num">DOMAIN_02</div>
+      <div class="domain-pct">20%</div>
+      <div class="domain-pct-label">of exam</div>
+    </div>
+    <div class="domain-content">
+      <div class="domain-title">Tool Design & MCP Integration</div>
+      <div class="domain-desc">Design effective tools and integrate with Model Context Protocol servers. Tool description best practices, structured error responses, MCP configuration.</div>
+      <div class="domain-tags">
+        <span class="tag">Tool Design</span>
+        <span class="tag">MCP Servers</span>
+        <span class="tag">Error Handling</span>
+      </div>
+    </div>
+    <div class="domain-action">
+      <a class="domain-link" href="#">study →</a>
+      <div class="domain-progress-wrap">
+        <div class="domain-progress-bar"><div class="domain-progress-fill" style="width:60%;"></div></div>
+        <div class="domain-progress-label">60% done</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="domain-row">
+    <div class="domain-meta">
+      <div class="domain-num">DOMAIN_03</div>
+      <div class="domain-pct">20%</div>
+      <div class="domain-pct-label">of exam</div>
+    </div>
+    <div class="domain-content">
+      <div class="domain-title">Claude Code Configuration & Workflows</div>
+      <div class="domain-desc">CLAUDE.md hierarchy, custom commands and skills, plan mode, iterative refinement, CI/CD integration, and batch processing.</div>
+      <div class="domain-tags">
+        <span class="tag">CLAUDE.md</span>
+        <span class="tag">Skills</span>
+        <span class="tag">CI/CD</span>
+        <span class="tag">Batch</span>
+      </div>
+    </div>
+    <div class="domain-action">
+      <a class="domain-link" href="#">study →</a>
+      <div class="domain-progress-wrap">
+        <div class="domain-progress-bar"><div class="domain-progress-fill" style="width:0%;"></div></div>
+        <div class="domain-progress-label">not started</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- STUDY PLAN + PRACTICE Q preview -->
+<div class="two-col">
+  <div class="col-panel">
+    <div class="section-header">12-Week Study Plan</div>
+
+    <div class="week-row">
+      <div class="week-num-col">week_01</div>
+      <div>
+        <div class="week-title done">Agentic Loops & Core API</div>
+        <div class="week-sub">Build a minimal loop · 10 practice Qs</div>
+      </div>
+      <div class="week-check done">✓</div>
+    </div>
+    <div class="week-row">
+      <div class="week-num-col">week_02</div>
+      <div>
+        <div class="week-title done">Multi-Agent Orchestration</div>
+        <div class="week-sub">Hub-and-spoke · fork_session</div>
+      </div>
+      <div class="week-check done">✓</div>
+    </div>
+    <div class="week-row" style="background: #eef9f4;">
+      <div class="week-num-col" style="color:var(--teal);">week_03 ←</div>
+      <div>
+        <div class="week-title">Hooks, Workflows & Sessions</div>
+        <div class="week-sub">PostToolUse hooks · --resume · escalation</div>
+      </div>
+      <div class="week-check"></div>
+    </div>
+    <div class="week-row">
+      <div class="week-num-col">week_04</div>
+      <div>
+        <div class="week-title" style="color:var(--muted);">Tool Design & MCP</div>
+        <div class="week-sub">Tool descriptions · MCP config</div>
+      </div>
+      <div class="week-check"></div>
+    </div>
+  </div>
+
+  <div class="col-panel">
+    <div class="section-header">Practice Questions</div>
+
+    <div class="q-card">
+      <div class="q-domain-tag">DOMAIN_01 · Agentic Architecture</div>
+      <div class="q-text">An agent using stop_reason: "tool_use" is calling an external API that occasionally times out. What is the correct pattern for handling this in the agentic loop?</div>
+      <div class="q-options">
+        <div class="q-opt">A. Terminate the loop and return an error to the user</div>
+        <div class="q-opt correct">B. Return a tool_result with is_error: true and let the model decide</div>
+        <div class="q-opt">C. Retry the tool call silently up to 3 times</div>
+        <div class="q-opt">D. Switch to a different tool automatically</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

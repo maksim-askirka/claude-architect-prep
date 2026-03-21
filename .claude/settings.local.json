@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:www.credly.com)",
+      "WebFetch(domain:anthropic.skilljar.com)",
+      "WebSearch",
+      "WebFetch(domain:claudecertificationguide.com)",
+      "mcp__plugin_serena_serena__list_memories",
+      "WebFetch(domain:www.reddit.com)",
+      "Bash(echo:*)",
+      "Bash(printf:*)",
+      "Bash(npx:*)",
+      "Bash(cd:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "serena@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "telegram@claude-plugins-official": true
+  }
+}

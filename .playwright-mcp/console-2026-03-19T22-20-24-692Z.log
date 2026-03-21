@@ -1,0 +1,3 @@
+[     959ms] [WARNING] [LaunchDarkly] Error on stream connection: {"isTrusted":true}, will continue retrying after 547 milliseconds. @ https://cdn.trackjs.com/releases/current/tracker.js:12
+[     962ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://www.credly.com/org/anthropic/badge/claude-certified-architect:0
+[    1312ms] [WARNING] [LaunchDarkly] The waitForInitialization function was called without a timeout specified. In a future version a default timeout will be applied. @ https://cdn.trackjs.com/releases/current/tracker.js:12

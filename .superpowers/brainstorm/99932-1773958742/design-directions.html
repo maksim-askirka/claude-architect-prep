@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Directions</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'DM Sans', sans-serif;
+    background: #f5f5f7;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #6e6e73;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .option-card {
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .option-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.10); }
+  .option-card.selected { border-color: #0071e3; box-shadow: 0 0 0 4px rgba(0,113,227,.12); }
+  .preview {
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .label-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 14px 18px 0;
+    color: #6e6e73;
+  }
+  .card-desc {
+    padding: 16px 18px 20px;
+  }
+  .card-desc h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 5px;
+  }
+  .card-desc p {
+    font-size: 13px;
+    color: #6e6e73;
+    line-height: 1.5;
+  }
+  .select-btn {
+    display: block;
+    width: calc(100% - 36px);
+    margin: 0 18px 18px;
+    padding: 10px;
+    background: #f5f5f7;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1d1d1f;
+    cursor: pointer;
+    transition: background .15s;
+    text-align: center;
+  }
+  .option-card.selected .select-btn { background: #0071e3; color: white; }
+
+  /* ── MOCKUP A: Ultra-minimal command center ── */
+  .mock-a {
+    padding: 14px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+  }
+  .mock-a-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 0 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .mock-a-logo { width: 18px; height: 18px; background: #1d1d1f; border-radius: 5px; }
+  .mock-a-nav span { font-size: 9px; font-weight: 600; color: #1d1d1f; }
+  .mock-a-nav-links { display: flex; gap: 10px; margin-left: auto; }
+  .mock-a-nav-links span { font-size: 8px; color: #6e6e73; }
+  .mock-a-hero { padding: 10px 0 6px; }
+  .mock-a-hero .badge {
+    display: inline-block;
+    font-size: 8px;
+    background: #f5f5f7;
+    color: #6e6e73;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+    border: 1px solid #e5e5ea;
+  }
+  .mock-a-hero h2 { font-size: 16px; font-weight: 700; color: #1d1d1f; line-height: 1.2; }
+  .mock-a-hero h2 span { color: #0071e3; }
+  .mock-a-hero p { font-size: 8px; color: #6e6e73; margin-top: 4px; line-height: 1.4; }
+  .mock-a-domains {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .mock-a-domain {
+    background: #f5f5f7;
+    border-radius: 8px;
+    padding: 7px 6px;
+  }
+  .mock-a-domain .num { font-size: 8px; font-weight: 700; color: #0071e3; }
+  .mock-a-domain .name { font-size: 7px; color: #1d1d1f; font-weight: 500; margin-top: 2px; line-height: 1.2; }
+  .mock-a-domain .pct { font-size: 7px; color: #6e6e73; margin-top: 1px; }
+
+  /* ── MOCKUP B: Sidebar doc ── */
+  .mock-b {
+    display: flex;
+    height: 100%;
+  }
+  .mock-b-sidebar {
+    width: 88px;
+    background: #fafafa;
+    border-right: 1px solid #f0f0f0;
+    padding: 12px 10px;
+    flex-shrink: 0;
+  }
+  .mock-b-sidebar .s-title { font-size: 8px; font-weight: 700; color: #1d1d1f; margin-bottom: 10px; }
+  .mock-b-sidebar .s-section { font-size: 7px; font-weight: 600; text-transform: uppercase; color: #aeaeb2; letter-spacing: .06em; margin: 8px 0 4px; }
+  .mock-b-sidebar .s-link { font-size: 8px; color: #6e6e73; padding: 3px 5px; border-radius: 5px; display: block; margin-bottom: 1px; }
+  .mock-b-sidebar .s-link.active { background: #e8f0fe; color: #0071e3; font-weight: 500; }
+  .mock-b-content {
+    flex: 1;
+    padding: 14px;
+    overflow: hidden;
+  }
+  .mock-b-breadcrumb { font-size: 8px; color: #aeaeb2; margin-bottom: 8px; }
+  .mock-b-breadcrumb span { color: #1d1d1f; }
+  .mock-b-content h3 { font-size: 12px; font-weight: 700; color: #1d1d1f; margin-bottom: 6px; }
+  .mock-b-progress {
+    height: 3px;
+    background: #f0f0f0;
+    border-radius: 2px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .mock-b-progress-fill { height: 100%; background: #0071e3; width: 45%; border-radius: 2px; }
+  .mock-b-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+  }
+  .mock-b-item.done { background: #f5f5f7; }
+  .mock-b-item .check { width: 10px; height: 10px; border-radius: 50%; background: #34c759; flex-shrink: 0; }
+  .mock-b-item .dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #d1d1d6; flex-shrink: 0; }
+  .mock-b-item span { font-size: 8px; color: #1d1d1f; }
+
+  /* ── MOCKUP C: Card dashboard ── */
+  .mock-c {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+  }
+  .mock-c-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .mock-c-nav .logo { font-size: 10px; font-weight: 700; color: #1d1d1f; }
+  .mock-c-nav .cta { font-size: 8px; background: #1d1d1f; color: white; padding: 4px 10px; border-radius: 20px; }
+  .mock-c-score {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5f5f7;
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .mock-c-ring {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: conic-gradient(#0071e3 0% 65%, #e8e8ed 65% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mock-c-ring-inner { width: 26px; height: 26px; background: #f5f5f7; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .mock-c-ring-inner span { font-size: 7px; font-weight: 700; color: #1d1d1f; }
+  .mock-c-score-text .main { font-size: 10px; font-weight: 600; color: #1d1d1f; }
+  .mock-c-score-text .sub { font-size: 8px; color: #6e6e73; }
+  .mock-c-domains { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .mock-c-domain {
+    background: white;
+    border-radius: 10px;
+    padding: 8px 10px;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mock-c-domain .icon { width: 18px; height: 18px; border-radius: 6px; flex-shrink: 0; }
+  .mock-c-domain .info .name { font-size: 7px; font-weight: 600; color: #1d1d1f; line-height: 1.2; }
+  .mock-c-domain .info .bar { height: 2px; background: #f0f0f0; border-radius: 1px; margin-top: 3px; overflow: hidden; }
+  .mock-c-domain .info .bar-fill { height: 100%; border-radius: 1px; }
+</style>
+</head>
+<body>
+
+<h1>Design Direction — Pick your aesthetic</h1>
+<p class="subtitle">Same content, same features. Three different visual personalities.</p>
+
+<div class="grid">
+
+  <!-- Option A: Ultra-minimal Apple homepage style -->
+  <div class="option-card" onclick="select(this,'a')">
+    <div class="label-tag">Option A</div>
+    <div class="preview">
+      <div class="mock-a">
+        <div class="mock-a-nav">
+          <div class="mock-a-logo"></div>
+          <span>Claude Architect</span>
+          <div class="mock-a-nav-links">
+            <span>Domains</span><span>Practice</span><span>Cheatsheet</span><span style="color:#0071e3;font-weight:600;">Register →</span>
+          </div>
+        </div>
+        <div class="mock-a-hero">
+          <div class="badge">Claude Certified Architect · Foundations</div>
+          <h2>Pass the exam.<br><span>Own the stack.</span></h2>
+          <p>5 domains · 33 practice questions · 12-week plan · 100% free</p>
+        </div>
+        <div class="mock-a-domains">
+          <div class="mock-a-domain">
+            <div class="num">D1</div>
+            <div class="name">Agentic Architecture</div>
+            <div class="pct">25%</div>
+          </div>
+          <div class="mock-a-domain">
+            <div class="num">D2</div>
+            <div class="name">Tool Design & MCP</div>
+            <div class="pct">20%</div>
+          </div>
+          <div class="mock-a-domain">
+            <div class="num">D3</div>
+            <div class="name">Claude Code Config</div>
+            <div class="pct">20%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">
+      <h3>Apple homepage style</h3>
+      <p>Pure white, generous whitespace, big bold headline, clean nav. Content-first with zero decoration. Feels like apple.com or Linear.</p>
+    </div>
+    <button class="select-btn">Choose this →</button>
+  </div>
+
+  <!-- Option B: Docs with sidebar -->
+  <div class="option-card" onclick="select(this,'b')">
+    <div class="label-tag">Option B</div>
+    <div class="preview">
+      <div class="mock-b">
+        <div class="mock-b-sidebar">
+          <div class="s-title">Architect Prep</div>
+          <div class="s-section">Overview</div>
+          <a class="s-link">Exam Guide</a>
+          <a class="s-link">Study Plan</a>
+          <div class="s-section">Domains</div>
+          <a class="s-link active">D1 · Agentic</a>
+          <a class="s-link">D2 · Tools</a>
+          <a class="s-link">D3 · Claude Code</a>
+          <a class="s-link">D4 · Prompting</a>
+          <a class="s-link">D5 · Context</a>
+          <div class="s-section">Practice</div>
+          <a class="s-link">Quiz</a>
+          <a class="s-link">Cheatsheet</a>
+          <a class="s-link">Anti-Patterns</a>
+        </div>
+        <div class="mock-b-content">
+          <div class="mock-b-breadcrumb">Domains › <span>Agentic Architecture</span></div>
+          <h3>Domain 1 — Agentic Architecture & Orchestration</h3>
+          <div class="mock-b-progress"><div class="mock-b-progress-fill"></div></div>
+          <div class="mock-b-item done"><div class="check"></div><span>Agentic Loops & Core API</span></div>
+          <div class="mock-b-item done"><div class="check"></div><span>Multi-Agent Orchestration</span></div>
+          <div class="mock-b-item"><div class="dot"></div><span>Hooks & Programmatic Enforcement</span></div>
+          <div class="mock-b-item"><div class="dot"></div><span>Session Management & Workflows</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">
+      <h3>Docs-style with sidebar</h3>
+      <p>Persistent left nav, progress indicators per section, breadcrumbs. Feels like Vercel docs or Radix docs — structured for deep study.</p>
+    </div>
+    <button class="select-btn">Choose this →</button>
+  </div>
+
+  <!-- Option C: Dashboard cards -->
+  <div class="option-card" onclick="select(this,'c')">
+    <div class="label-tag">Option C</div>
+    <div class="preview">
+      <div class="mock-c">
+        <div class="mock-c-nav">
+          <span class="logo">Architect Prep</span>
+          <span class="cta">Register for Exam</span>
+        </div>
+        <div class="mock-c-score">
+          <div class="mock-c-ring">
+            <div class="mock-c-ring-inner"><span>65%</span></div>
+          </div>
+          <div class="mock-c-score-text">
+            <div class="main">Study Progress</div>
+            <div class="sub">3 of 5 domains · Week 6 of 12</div>
+          </div>
+        </div>
+        <div class="mock-c-domains">
+          <div class="mock-c-domain">
+            <div class="icon" style="background:#e8f0fe;"></div>
+            <div class="info">
+              <div class="name">Agentic Architecture</div>
+              <div class="bar"><div class="bar-fill" style="width:100%;background:#0071e3;"></div></div>
+            </div>
+          </div>
+          <div class="mock-c-domain">
+            <div class="icon" style="background:#fef0e8;"></div>
+            <div class="info">
+              <div class="name">Tool Design & MCP</div>
+              <div class="bar"><div class="bar-fill" style="width:80%;background:#ff9f0a;"></div></div>
+            </div>
+          </div>
+          <div class="mock-c-domain">
+            <div class="icon" style="background:#e8fee8;"></div>
+            <div class="info">
+              <div class="name">Claude Code Config</div>
+              <div class="bar"><div class="bar-fill" style="width:60%;background:#34c759;"></div></div>
+            </div>
+          </div>
+          <div class="mock-c-domain">
+            <div class="icon" style="background:#f5e8fe;"></div>
+            <div class="info">
+              <div class="name">Prompt Engineering</div>
+              <div class="bar"><div class="bar-fill" style="width:30%;background:#bf5af2;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-desc">
+      <h3>Dashboard with progress rings</h3>
+      <p>iOS/watchOS-style activity rings. Progress saved locally. Domain cards show completion at a glance. Feels like an app, not a website.</p>
+    </div>
+    <button class="select-btn">Choose this →</button>
+  </div>
+
+</div>
+
+<script src="helper.js"></script>
+<script>
+function select(el, choice) {
+  document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.recordChoice) recordChoice(choice, el.querySelector('h3').textContent);
+}
+</script>
+
+</body>
+</html>

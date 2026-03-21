@@ -1,0 +1,71 @@
+<h2>Site Layout — Which structure fits best?</h2>
+<p class="subtitle">All three cover the same content. The difference is how users navigate and progress through exam prep.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8f7f4;border-radius:8px;">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:10px;">Option A — Docs-style with sidebar</div>
+      <div style="display:flex;gap:8px;height:120px;">
+        <div style="width:90px;background:#e8e4dc;border-radius:4px;padding:8px;flex-shrink:0;">
+          <div style="font-size:9px;font-weight:700;color:#666;margin-bottom:6px;">EXAM PREP</div>
+          <div style="font-size:9px;color:#888;line-height:1.8;">▸ Overview<br>▸ Domain 1<br>▸ Domain 2<br>▸ Domain 3<br>▸ Domain 4<br>▸ Domain 5<br>▸ Practice<br>▸ Study Plan</div>
+        </div>
+        <div style="flex:1;background:#fff;border-radius:4px;padding:8px;">
+          <div style="font-size:10px;font-weight:700;color:#333;margin-bottom:4px;">Domain 1: Agentic Architecture</div>
+          <div style="height:4px;background:#c9a96e;border-radius:2px;margin-bottom:6px;width:60%;"></div>
+          <div style="font-size:8px;color:#888;line-height:1.6;">Subtopics · Key concepts<br>Code patterns · Anti-patterns<br>Practice questions →</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Docs-style sidebar nav</h3>
+      <p>Persistent left sidebar with all sections always visible. Navigate freely between domains, cheatsheets, practice. Like reading Stripe or Anthropic docs. Best for non-linear study.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8f7f4;border-radius:8px;">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:10px;">Option B — Dashboard with progress</div>
+      <div style="background:#fff;border-radius:4px;padding:10px;">
+        <div style="font-size:9px;font-weight:700;color:#333;margin-bottom:6px;">Your Progress — 3 of 5 domains complete</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px;">
+          <div style="background:#c9a96e;border-radius:3px;padding:5px;text-align:center;font-size:8px;color:#fff;font-weight:600;">✓ D1</div>
+          <div style="background:#c9a96e;border-radius:3px;padding:5px;text-align:center;font-size:8px;color:#fff;font-weight:600;">✓ D2</div>
+          <div style="background:#c9a96e;border-radius:3px;padding:5px;text-align:center;font-size:8px;color:#fff;font-weight:600;">✓ D3</div>
+          <div style="background:#e8e4dc;border-radius:3px;padding:5px;text-align:center;font-size:8px;color:#999;">D4</div>
+          <div style="background:#e8e4dc;border-radius:3px;padding:5px;text-align:center;font-size:8px;color:#999;">D5</div>
+          <div style="background:#e8e4dc;border-radius:3px;padding:5px;text-align:center;font-size:8px;color:#999;">Quiz</div>
+        </div>
+        <div style="font-size:8px;color:#888;">Next up: Domain 4 — Prompt Engineering →</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Dashboard + progress tracking</h3>
+      <p>Landing page is a personal dashboard showing completion state across domains and study plan weeks. Progress saved in localStorage. Motivating for systematic learners following the 12-week plan.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8f7f4;border-radius:8px;">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:10px;">Option C — Clean marketing + deep pages</div>
+      <div style="background:#fff;border-radius:4px;padding:10px;">
+        <div style="text-align:center;margin-bottom:8px;">
+          <div style="font-size:10px;font-weight:700;color:#333;">Pass the Claude Certified</div>
+          <div style="font-size:10px;font-weight:700;color:#c9a96e;">Architect Exam</div>
+        </div>
+        <div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px;">
+          <div style="background:#c9a96e;border-radius:3px;padding:4px 8px;font-size:8px;color:#fff;">Study Guide</div>
+          <div style="background:#e8e4dc;border-radius:3px;padding:4px 8px;font-size:8px;color:#666;">Practice</div>
+          <div style="background:#e8e4dc;border-radius:3px;padding:4px 8px;font-size:8px;color:#666;">Cheatsheet</div>
+        </div>
+        <div style="font-size:8px;color:#888;text-align:center;">Each nav item → focused deep-dive page</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Clean landing + focused deep pages</h3>
+      <p>Beautiful marketing homepage (like claudecertifications.com but sharper), then each section is a standalone focused page: /study-guide, /practice, /cheatsheet, /domains/[slug]. No sidebar — top nav only.</p>
+    </div>
+  </div>
+
+</div>
