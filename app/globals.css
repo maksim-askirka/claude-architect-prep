@@ -21,6 +21,7 @@
 body {
   font-family: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg);
   color: var(--text);
 }
