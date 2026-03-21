@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://claude-architect-prep.vercel.app
+
+# Sitemaps
+Sitemap: https://claude-architect-prep.vercel.app/sitemap.xml

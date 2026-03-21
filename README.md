@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Claude Certified Architect Prep Hub
 
-## Getting Started
+Free, open-access exam prep for the [Claude Certified Architect – Foundations](https://anthropic.skilljar.com/claude-certified-architect-foundations-access-request) certification (Anthropic's official credential).
 
-First, run the development server:
+## What's inside
+
+- **5 domain deep-dives** — Agentic Architecture, Tool Design & MCP, Claude Code Config, Prompt Engineering, Context Management
+- **35 practice questions** — filterable by domain, immediate answer reveal
+- **12-week study plan** — ~84 hours, with per-week tasks and resources
+- **6 exam scenario walkthroughs** — step-by-step analysis
+- **4 build exercises** — hands-on practice
+- **Cheatsheet** — printable quick reference
+- **Progress tracking** — localStorage (no login required)
+
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS |
+| Font | IBM Plex Mono |
+| Content | MDX (per domain) |
+| Progress | localStorage |
+| Hosting | Vercel |
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+```
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+This project deploys to Vercel automatically on push to `main`. To deploy manually:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx vercel --prod
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Set `SITE_URL` environment variable in Vercel dashboard to your production URL for correct sitemap generation.
 
-## Deploy on Vercel
+## Exam facts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Field | Value |
+|-------|-------|
+| Format | Multiple choice + scenario-based |
+| Scenarios | 4 of 6 randomly selected |
+| Passing score | 720 / 1000 |
+| Duration | ~15 minutes |
+| Cost | Free for first 5,000 partner employees |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+MIT

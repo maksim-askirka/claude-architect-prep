@@ -17,7 +17,19 @@ export const metadata: Metadata = {
     template: '%s | Claude Architect Prep',
   },
   description:
-    'Free exam prep for the Claude Certified Architect – Foundations certification. All 5 domains, 33+ practice questions, 12-week study plan.',
+    'Free exam prep for the Claude Certified Architect – Foundations certification. All 5 domains, 35+ practice questions, 12-week study plan.',
+  openGraph: {
+    title: 'Claude Certified Architect Prep',
+    description:
+      'Free exam prep for the Claude Certified Architect – Foundations certification.',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Claude Certified Architect Prep',
+    description: 'Free exam prep. All 5 domains, 35+ questions, 12-week plan.',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
