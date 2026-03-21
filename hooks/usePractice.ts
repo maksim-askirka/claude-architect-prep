@@ -7,7 +7,7 @@ import { setQuizResult } from '@/lib/progress'
 
 export function usePractice() {
   const [filter, setFilter] = useState<DomainKey | 'all'>('all')
-  // Map of question id → whether answered correctly (null = not answered)
+  // Map of question id → correct (true/false); absence = not yet answered
   const [answers, setAnswers] = useState<Record<string, boolean>>({})
 
   const questions = useMemo(() => getQuestionsByDomain(filter), [filter])

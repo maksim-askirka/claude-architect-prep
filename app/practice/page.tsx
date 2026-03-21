@@ -6,7 +6,7 @@ import { DomainFilter } from '@/components/DomainFilter'
 import { ScoreDisplay } from '@/components/ScoreDisplay'
 
 export default function PracticePage() {
-  const { filter, questions, answers, correctCount, handleAnswer, handleFilterChange } = usePractice()
+  const { filter, questions, answeredCount, correctCount, handleAnswer, handleFilterChange } = usePractice()
 
   return (
     <div>
@@ -21,7 +21,7 @@ export default function PracticePage() {
       {/* Controls row */}
       <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
         <DomainFilter active={filter} onChange={handleFilterChange} />
-        <ScoreDisplay correct={correctCount} total={Object.keys(answers).length} />
+        <ScoreDisplay correct={correctCount} total={answeredCount} />
       </div>
 
       {/* Questions */}
