@@ -30,6 +30,8 @@ export function WeekRow({ number, weekKey, title, hours, tasks, resources, compl
         />
         <button
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          aria-label={`Toggle details for week ${number}`}
           className="flex-1 text-left flex items-center justify-between gap-4"
         >
           <span className={`text-[11px] uppercase tracking-widest flex-shrink-0 ${complete ? 'text-[var(--teal)]' : 'text-[var(--muted)]'}`}>

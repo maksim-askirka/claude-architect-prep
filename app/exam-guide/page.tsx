@@ -98,7 +98,7 @@ export default function ExamGuidePage() {
           href="https://anthropic.skilljar.com/claude-certified-architect-foundations-access-request"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs border border-[var(--teal)] text-[var(--teal)] px-4 py-2 hover:bg-white transition-colors"
+          className="text-xs border border-[var(--teal)] text-[var(--teal)] px-4 py-2 hover:bg-[var(--bg)] transition-colors"
         >
           register_for_exam →
         </a>
