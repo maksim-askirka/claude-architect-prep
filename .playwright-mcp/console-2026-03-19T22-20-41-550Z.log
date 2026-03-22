@@ -1,2 +1,0 @@
-[     450ms] [WARNING] [LaunchDarkly] Error on stream connection: {"isTrusted":true}, will continue retrying after 751 milliseconds. @ https://cdn.trackjs.com/releases/current/tracker.js:12
-[     504ms] [WARNING] [LaunchDarkly] The waitForInitialization function was called without a timeout specified. In a future version a default timeout will be applied. @ https://cdn.trackjs.com/releases/current/tracker.js:12

@@ -36,6 +36,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -43,3 +44,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI tooling artifacts
+.playwright-mcp/
+.superpowers/
+docs/superpowers/
+
+# local editor config (machine-specific)
+.vscode/
+.claude/
+
+# compiler caches
+.swc/
+
+# personal tooling
+.codemie/
