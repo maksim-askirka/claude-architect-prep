@@ -1,6 +1,7 @@
 // app/exam-guide/page.tsx
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { DOMAINS } from '@/lib/domains'
 
 export const metadata: Metadata = {
   title: 'Exam Guide',
@@ -16,13 +17,8 @@ const EXAM_FACTS = [
   { label: 'Registration', value: 'anthropic.skilljar.com' },
 ]
 
-const DOMAIN_WEIGHTS = [
-  { name: 'D1 — Agentic Architecture & Orchestration', weight: 27 },
-  { name: 'D2 — Tool Design & MCP Integration', weight: 18 },
-  { name: 'D3 — Claude Code Configuration & Workflows', weight: 20 },
-  { name: 'D4 — Prompt Engineering & Structured Output', weight: 20 },
-  { name: 'D5 — Context Management & Reliability', weight: 15 },
-]
+const DOMAIN_WEIGHTS = DOMAINS.map((d) => ({ name: `${d.number} — ${d.title}`, weight: d.weight }))
+const MAX_DOMAIN_WEIGHT = Math.max(...DOMAIN_WEIGHTS.map((d) => d.weight))
 
 const FAQ = [
   {
@@ -80,7 +76,7 @@ export default function ExamGuidePage() {
             <div key={d.name} className="flex items-center gap-4">
               <span className="text-xs text-[var(--text)] w-64 flex-shrink-0">{d.name}</span>
               <div className="flex-1 h-[2px] bg-[var(--border)]">
-                <div className="h-full bg-[var(--teal)]" style={{ width: `${d.weight * (100 / 27)}%` }} />
+                <div className="h-full bg-[var(--teal)]" style={{ width: `${d.weight * (100 / MAX_DOMAIN_WEIGHT)}%` }} />
               </div>
               <span className="text-[11px] text-[var(--teal)] w-8 text-right">{d.weight}%</span>
             </div>

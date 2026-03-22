@@ -1,6 +1,7 @@
 // app/scenarios/page.tsx
 import type { Metadata } from 'next'
 import { SCENARIOS } from '@/lib/scenarios'
+import { pad2 } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Exam Scenarios',
@@ -21,7 +22,7 @@ export default function ScenariosPage() {
             {/* Header */}
             <div className="mb-4">
               <div className="text-[11px] uppercase tracking-widest text-[var(--teal)] mb-1">
-                scenario_{String(s.number).padStart(2, '0')} · {s.domain}
+                scenario_{pad2(s.number)} · {s.domain}
               </div>
               <h2 className="text-base font-semibold">{s.title}</h2>
             </div>
@@ -39,10 +40,10 @@ export default function ScenariosPage() {
                 {s.steps.map((step, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="text-xs font-semibold text-[var(--teal)] flex-shrink-0 mt-0.5">
-                      {step.heading.split(' ')[0]}
+                      {step.stepNumber}
                     </div>
                     <div>
-                      <div className="text-xs font-semibold mb-1">{step.heading.substring(step.heading.indexOf(' ') + 1)}</div>
+                      <div className="text-xs font-semibold mb-1">{step.title}</div>
                       <p className="text-xs text-[var(--text)] leading-6">{step.detail}</p>
                     </div>
                   </div>

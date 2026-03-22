@@ -1,6 +1,7 @@
 // app/cheatsheet/page.tsx
 import type { Metadata } from 'next'
 import { PrintButton } from '@/components/PrintButton'
+import { DOMAINS } from '@/lib/domains'
 
 export const metadata: Metadata = {
   title: 'Cheatsheet',
@@ -9,9 +10,6 @@ export const metadata: Metadata = {
 
 const DOMAIN_SUMMARIES = [
   {
-    number: 'D1',
-    title: 'Agentic Architecture & Orchestration',
-    weight: '27%',
     keyFacts: [
       'stop_reason="tool_use" → execute tool, append tool_result, continue loop',
       'stop_reason="end_turn" → final response, exit loop',
@@ -32,9 +30,6 @@ const DOMAIN_SUMMARIES = [
     ],
   },
   {
-    number: 'D2',
-    title: 'Tool Design & MCP Integration',
-    weight: '18%',
     keyFacts: [
       'Tool names: snake_case verb-noun (search_web, get_order_status)',
       'Description: explain WHEN to use the tool — this is how Claude selects it',
@@ -54,9 +49,6 @@ const DOMAIN_SUMMARIES = [
     ],
   },
   {
-    number: 'D3',
-    title: 'Claude Code Configuration & Workflows',
-    weight: '20%',
     keyFacts: [
       'CLAUDE.md levels: ~/.claude/CLAUDE.md (global) → <project>/CLAUDE.md → <subdir>/CLAUDE.md',
       'All levels loaded and merged; more specific = higher priority on conflicts',
@@ -78,9 +70,6 @@ const DOMAIN_SUMMARIES = [
     ],
   },
   {
-    number: 'D4',
-    title: 'Prompt Engineering & Structured Output',
-    weight: '20%',
     keyFacts: [
       'XML tags: <context>, <instructions>, <examples>, <output_format> — Claude is trained on these',
       'Few-shot placement: instructions → examples → actual task (not examples first)',
@@ -101,9 +90,6 @@ const DOMAIN_SUMMARIES = [
     ],
   },
   {
-    number: 'D5',
-    title: 'Context Management & Reliability',
-    weight: '15%',
     keyFacts: [
       'Context positioning: important/stable → beginning (system prompt); task → just before assistant',
       'Context window: ~200k tokens; large sessions approach this limit',
@@ -162,11 +148,13 @@ export default function CheatsheetPage() {
 
       {/* Domain summaries */}
       <div className="space-y-8 mb-12">
-        {DOMAIN_SUMMARIES.map((d) => (
-          <div key={d.number} className="border border-[var(--border)] p-5">
+        {DOMAIN_SUMMARIES.map((d, i) => {
+          const domain = DOMAINS[i]
+          return (
+          <div key={domain.number} className="border border-[var(--border)] p-5">
             <div className="flex items-baseline gap-3 mb-4">
-              <span className="text-[11px] uppercase tracking-widest text-[var(--teal)]">{d.number} · {d.weight}</span>
-              <h2 className="text-sm font-semibold">{d.title}</h2>
+              <span className="text-[11px] uppercase tracking-widest text-[var(--teal)]">{domain.number} · {domain.weight}%</span>
+              <h2 className="text-sm font-semibold">{domain.title}</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -193,7 +181,8 @@ export default function CheatsheetPage() {
               </div>
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Glossary */}

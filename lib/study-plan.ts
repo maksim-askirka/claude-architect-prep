@@ -1,7 +1,6 @@
 // lib/study-plan.ts
 
 export interface Week {
-  number: number
   key: string // 'week1' … 'week12'
   title: string
   hours: number
@@ -11,7 +10,6 @@ export interface Week {
 
 export const STUDY_PLAN: Week[] = [
   {
-    number: 1,
     key: 'week1',
     title: 'Foundation — Exam Format & Registration',
     hours: 5,
@@ -29,7 +27,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 2,
     key: 'week2',
     title: 'D1 — Agentic Loops & Core API',
     hours: 7,
@@ -46,7 +43,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 3,
     key: 'week3',
     title: 'D1 — Multi-Agent, Hooks & Sessions',
     hours: 7,
@@ -63,7 +59,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 4,
     key: 'week4',
     title: 'D2 — Tool Design & Error Responses',
     hours: 7,
@@ -79,7 +74,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 5,
     key: 'week5',
     title: 'D2 — MCP & Built-in Tools',
     hours: 7,
@@ -96,7 +90,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 6,
     key: 'week6',
     title: 'D3 — Claude Code Configuration',
     hours: 7,
@@ -113,7 +106,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 7,
     key: 'week7',
     title: 'D4 — Explicit Criteria & Few-Shot',
     hours: 7,
@@ -129,7 +121,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 8,
     key: 'week8',
     title: 'D4 — Structured Output & Retry Loops',
     hours: 7,
@@ -145,7 +136,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 9,
     key: 'week9',
     title: 'D5 — Context Management & Reliability',
     hours: 7,
@@ -162,7 +152,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 10,
     key: 'week10',
     title: 'Anti-Patterns & Cross-Domain Review',
     hours: 7,
@@ -178,7 +167,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 11,
     key: 'week11',
     title: 'Exam Scenarios Walkthrough',
     hours: 7,
@@ -194,7 +182,6 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
   {
-    number: 12,
     key: 'week12',
     title: 'Final Review & Exam',
     hours: 7,
@@ -212,3 +199,5 @@ export const STUDY_PLAN: Week[] = [
     ],
   },
 ]
+
+export const TOTAL_HOURS = STUDY_PLAN.reduce((sum, w) => sum + w.hours, 0)

@@ -18,7 +18,7 @@ const DEFAULT: ProgressData = {
 }
 
 function cloneDefault(): ProgressData {
-  return JSON.parse(JSON.stringify(DEFAULT)) as ProgressData
+  return structuredClone(DEFAULT)
 }
 
 export function getProgress(): ProgressData {

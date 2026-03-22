@@ -1,6 +1,7 @@
 // app/exercises/page.tsx
 import type { Metadata } from 'next'
 import { EXERCISES } from '@/lib/exercises'
+import { pad2 } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Build Exercises',
@@ -21,7 +22,7 @@ export default function ExercisesPage() {
             {/* Header */}
             <div className="mb-4">
               <div className="text-[11px] uppercase tracking-widest text-[var(--teal)] mb-1">
-                exercise_{ex.number.toString().padStart(2, '0')} · {ex.domain} · ~{ex.estimatedTime}
+                exercise_{pad2(ex.number)} · {ex.domain} · ~{ex.estimatedTime}
               </div>
               <h2 className="text-base font-semibold">{ex.title}</h2>
             </div>
