@@ -56,6 +56,3 @@ docs/superpowers/
 
 # compiler caches
 .swc/
-
-# personal tooling
-.codemie/
