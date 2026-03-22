@@ -10,17 +10,7 @@ import {
   getDomainCompletion,
 } from '@/lib/progress'
 
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, val: string) => { store[key] = val },
-    removeItem: (key: string) => { delete store[key] },
-    clear: () => { store = {} },
-  }
-})()
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+import { localStorageMock } from '../helpers/mockLocalStorage'
 
 beforeEach(() => localStorageMock.clear())
 

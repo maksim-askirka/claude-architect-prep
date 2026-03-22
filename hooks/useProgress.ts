@@ -1,11 +1,11 @@
 // hooks/useProgress.ts
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { getProgress, resetProgress as resetLib } from '@/lib/progress'
+import { getProgress, getDefaultProgress, resetProgress as resetLib } from '@/lib/progress'
 import { ProgressData } from '@/types'
 
 export function useProgress() {
-  const [data, setData] = useState<ProgressData>(() => getProgress())
+  const [data, setData] = useState<ProgressData>(getDefaultProgress)
 
   const reload = useCallback(() => {
     setData(getProgress())

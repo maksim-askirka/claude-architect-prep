@@ -1,6 +1,6 @@
 // hooks/usePractice.ts
 'use client'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { DomainKey } from '@/types'
 import { getQuestionsByDomain } from '@/lib/questions'
 import { setQuizResult } from '@/lib/progress'
@@ -15,26 +15,18 @@ export function usePractice() {
   const answeredCount = Object.keys(answers).length
   const correctCount = Object.values(answers).filter(Boolean).length
 
-  const handleAnswer = useCallback(
-    (questionId: string, correct: boolean) => {
-      setAnswers((prev) => {
-        const updated = { ...prev, [questionId]: correct }
+  const handleAnswer = useCallback((questionId: string, correct: boolean) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: correct }))
+  }, [])
 
-        // If a single domain is selected and all filtered questions answered → save result
-        if (filter !== 'all') {
-          const filteredQuestions = getQuestionsByDomain(filter)
-          const allAnswered = filteredQuestions.every((q) => q.id in updated)
-          if (allAnswered) {
-            const domainCorrect = filteredQuestions.filter((q) => updated[q.id]).length
-            setQuizResult(filter, domainCorrect, filteredQuestions.length)
-          }
-        }
-
-        return updated
-      })
-    },
-    [filter]
-  )
+  // Persist quiz result when all questions in a domain filter are answered
+  useEffect(() => {
+    if (filter === 'all' || questions.length === 0) return
+    const allAnswered = questions.every((q) => q.id in answers)
+    if (!allAnswered) return
+    const domainCorrect = questions.filter((q) => answers[q.id]).length
+    setQuizResult(filter, domainCorrect, questions.length)
+  }, [answers, filter, questions])
 
   const handleFilterChange = useCallback((newFilter: DomainKey | 'all') => {
     setFilter(newFilter)

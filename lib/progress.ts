@@ -21,6 +21,10 @@ function cloneDefault(): ProgressData {
   return structuredClone(DEFAULT)
 }
 
+export function getDefaultProgress(): ProgressData {
+  return cloneDefault()
+}
+
 export function getProgress(): ProgressData {
   if (typeof window === 'undefined') return cloneDefault()
   try {
@@ -41,9 +45,9 @@ export function resetProgress(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
 
-export function setSubtopicComplete(domain: DomainKey, index: number): void {
+export function setSubtopicComplete(domain: DomainKey, index: number, complete = true): void {
   const data = getProgress()
-  data.progress[domain].subtopics[index] = true
+  data.progress[domain].subtopics[index] = complete
   saveProgress(data)
 }
 

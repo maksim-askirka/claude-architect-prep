@@ -1,4 +1,5 @@
 // hooks/useStudyPlan.ts
+'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { getProgress, setWeekComplete } from '@/lib/progress'
 

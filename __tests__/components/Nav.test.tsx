@@ -30,13 +30,18 @@ describe('Nav', () => {
     expect(screen.getAllByRole('link', { name: 'exam_guide/' }).length).toBeGreaterThan(0)
   })
 
-  it('applies teal color to the active link', () => {
+  it('applies teal color class to the active link', () => {
     mockUsePathname.mockReturnValue('/practice')
     render(<Nav />)
-    // Desktop links — find the one matching /practice
     const practiceLinks = screen.getAllByRole('link', { name: 'practice/' })
-    // At least one should have teal class
-    expect(practiceLinks.some(l => l.className.includes('var(--teal)'))).toBe(true)
+    expect(practiceLinks.some(l => l.className.includes('text-[var(--teal)]'))).toBe(true)
+  })
+
+  it('applies muted color class to inactive links', () => {
+    mockUsePathname.mockReturnValue('/practice')
+    render(<Nav />)
+    const dashboardLinks = screen.getAllByRole('link', { name: 'dashboard/' })
+    expect(dashboardLinks.some(l => l.className.includes('text-[var(--muted)]'))).toBe(true)
   })
 
   it('mobile menu is hidden by default', () => {
