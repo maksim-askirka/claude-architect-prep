@@ -60,37 +60,67 @@ Path-scoped rules only load into context when Claude works with matching files �
 />
 </SubtopicSection>
 
-<SubtopicSection domainKey="d3" index={1} title="Custom Commands & Skills">
+<SubtopicSection domainKey="d3" index={1} title="Skills & Custom Commands">
 
-Custom commands and skills are how you encode reusable workflows into Claude Code. Instead of typing out the same multi-step instructions for common tasks, you define them once and invoke them with a slash command or let Claude trigger them automatically based on context.
+**Skills are the canonical system for reusable workflows.** Custom commands (`.claude/commands/<name>.md`) still work but are considered legacy. The current system uses directory-based SKILL.md files:
 
-**Commands** are markdown files stored in `.claude/commands/<name>.md` within your project (project-scoped) or `~/.claude/commands/<name>.md` (global). When you type `/name` in a Claude Code session, the contents of that file are injected as a prompt. The file becomes the instructions Claude follows for that workflow.
+- `.claude/skills/<name>/SKILL.md` — project-scoped
+- `~/.claude/skills/<name>/SKILL.md` — personal (available in all projects)
+- `~/.claude/plugins/<name>/skills/<name>/SKILL.md` — plugin-distributed
 
-For example, a `.claude/commands/review-pr.md` might contain:
+**SKILL.md structure:** YAML frontmatter + markdown instructions.
 
-```markdown
-Review the current git diff for:
-1. Security vulnerabilities
-2. Performance issues
-3. Test coverage gaps
-4. Code style consistency with CLAUDE.md conventions
+Key frontmatter fields:
 
-Output a structured report with severity levels.
-```
+| Field | Purpose |
+|-------|---------|
+| `description` | Drives auto-invocation — truncated at 250 chars, front-load the key use case |
+| `disable-model-invocation: true` | User-only — removes the skill from Claude's context entirely |
+| `user-invocable: false` | Claude-only background knowledge — hidden from the `/` command menu |
+| `allowed-tools` | Tools Claude can use without permission prompts when this skill runs |
+| `model` | Override model for this skill |
+| `effort` | Override effort level |
+| `context: fork` | Run the skill in an isolated subagent context |
+| `agent` | Agent type for `context: fork` — `Explore`, `Plan`, `general-purpose`, or a custom agent name |
+| `paths` | Glob patterns — only auto-load this skill for matching file contexts |
+| `hooks` | Lifecycle hooks scoped to this skill |
 
-Typing `/review-pr` instantly kicks off that workflow without you having to type it out.
+**Invocation control:**
 
-**Skills** go further. A skill is a richer definition that includes a `description` field. This description tells Claude *when to proactively trigger the skill* — not just when explicitly invoked. If your deployment skill's description says "Use when the user asks to deploy, ship, release, or publish to production," Claude will suggest or invoke it automatically when it detects deployment-related requests.
+| Frontmatter | User can invoke (`/name`) | Claude can invoke |
+|------------|--------------------------|------------------|
+| (default) | Yes | Yes — via description |
+| `disable-model-invocation: true` | Yes | No — not in Claude's context |
+| `user-invocable: false` | No | Yes — description in context |
 
-The `Skill` tool is how Claude programmatically invokes skills within an agentic loop. An orchestrator agent can detect that a subtask matches a skill's description and invoke it via the `Skill` tool without explicit user direction.
+**Shell injection:** `` !`command` `` inside a SKILL.md runs the command *before* Claude receives the skill. Output replaces the placeholder inline. Claude sees actual data, not a command string. This is preprocessing, not Claude-side execution.
 
-**Command organization** matters at scale. Group related commands in subdirectories (`.claude/commands/test/unit.md`, `.claude/commands/test/integration.md`). The slash command path follows the directory structure. For global commands that apply across all projects — like a personal code review style or a standard commit message format — store them in `~/.claude/commands/`.
+**`context: fork`** runs the skill as a new isolated subagent. The skill content becomes the subagent's task prompt. The subagent does not have access to the main conversation history — it starts fresh.
+
+**Variable substitutions:** `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_SKILL_DIR}`
+
+**Built-in bundled skills** (available in every session):
+
+| Skill | Purpose |
+|-------|---------|
+| `/batch <instruction>` | Decomposes into 5–30 units; one background agent per unit in isolated worktree; each opens a PR |
+| `/simplify [focus]` | Three parallel review agents aggregate and fix recent changes |
+| `/loop [interval] <prompt>` | Repeats prompt on an interval within the current session |
+| `/debug [description]` | Enables debug logging and reads the session debug log |
+| `/claude-api` | Loads the Claude API reference for the current project language |
 
 <InlinePracticeQ
   question="You want Claude to proactively suggest using your deployment workflow when it detects deployment-related tasks. What should you create?"
   options={["A slash command in .claude/commands/", "A skill with a description field that describes when to trigger it", "A CLAUDE.md entry", "A PreToolUse hook"]}
   correct={1}
   explanation="Skills with description fields allow Claude to proactively invoke them when the description matches the current task. Slash commands require explicit user invocation."
+/>
+
+<InlinePracticeQ
+  question="A SKILL.md file has disable-model-invocation: true in its frontmatter. What does this mean?"
+  options={["The skill cannot use any tools", "The skill runs without consulting Claude", "Claude is not aware of the skill — only the user can trigger it with the slash command", "The skill is disabled until manually enabled"]}
+  correct={2}
+  explanation="disable-model-invocation: true removes the skill from Claude's context entirely. Claude never auto-invokes it and is not aware it exists. The user can still trigger it explicitly with /skill-name."
 />
 </SubtopicSection>
 
