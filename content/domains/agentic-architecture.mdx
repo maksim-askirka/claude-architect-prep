@@ -38,6 +38,8 @@ async function runAgentLoop(userMessage: string): Promise<string> {
 
 A common mistake is forgetting that both the assistant's tool_use message and the user's tool_result message must be added to the conversation. Omitting either causes a validation error or confused Claude behavior. Another pitfall: handling multiple tool calls in a single response. Claude can return multiple tool_use blocks in one turn; your `executeTools` function must handle all of them and return an array of tool_result blocks.
 
+For parallel agent work, Claude Code's `run_in_background` parameter dispatches multiple subagents concurrently without waiting for each to complete. Add `isolation: worktree` in the subagent's definition to give each agent its own git worktree — preventing file write conflicts when multiple agents work on the same codebase simultaneously.
+
 <InlinePracticeQ
   question="Which stop_reason indicates Claude wants to invoke a tool?"
   options={["end_turn", "tool_use", "max_tokens", "stop_sequence"]}
@@ -196,6 +198,12 @@ Claude's context window is approximately 200,000 tokens. In long sessions workin
 **Plan mode** (toggled with `Shift+Tab`) changes how Claude works. Instead of immediately writing code, Claude reads files and develops a plan first, using the `ExitPlanMode` tool when it's ready to present the plan for your approval. This is invaluable for complex features or refactors where you want to review the approach before any changes are made.
 
 For **batch processing and CI/CD**, `claude -p "prompt" --output-format json` runs Claude non-interactively and outputs structured JSON. This enables automated workflows: nightly code reviews, PR description generation, or test coverage analysis on push.
+
+**Git worktrees** provide isolation for parallel Claude Code instances. `claude --worktree <name>` creates a worktree at `.claude/worktrees/<name>/`. Add a `.worktreeinclude` file to automatically copy gitignored files (like `.env`) into new worktrees.
+
+**Effort levels** control how much reasoning Claude applies per turn. Set them with `/effort`, the `CLAUDE_CODE_EFFORT_LEVEL` environment variable, or per-session in settings: `low`, `medium`, `high`, `max` (Opus 4.6 only). Add `ultrathink` to any prompt for a single-turn `high` effort boost.
+
+**Scheduled tasks** extend automation beyond `/loop` (within-session polling): Cloud scheduled tasks run on Anthropic-managed infrastructure and persist when your machine is off. Desktop scheduled tasks run locally with access to local files and uncommitted changes. GitHub Actions integration enables CI-event-triggered workflows.
 
 <InlinePracticeQ
   question="You want to continue yesterday's Claude Code session on a large codebase. The conversation is very long. What should you do before running more tasks?"
