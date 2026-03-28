@@ -17,7 +17,7 @@ describe('DomainRow', () => {
   it('renders all subtopic tags', () => {
     render(<DomainRow domain={d1} progress={emptyProgress} />)
     expect(screen.getByText('Agentic Loops & Core API')).toBeInTheDocument()
-    expect(screen.getByText('Multi-Agent Orchestration')).toBeInTheDocument()
+    expect(screen.getByText('Sub-agents & Agent Teams')).toBeInTheDocument()
   })
 
   it('shows correct completion count', () => {
