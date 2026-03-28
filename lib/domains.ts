@@ -10,7 +10,7 @@ export const DOMAINS: Domain[] = [
     weight: 27,
     subtopics: [
       'Agentic Loops & Core API',
-      'Multi-Agent Orchestration',
+      'Sub-agents & Agent Teams',
       'Hooks & Programmatic Enforcement',
       'Session Management & Workflows',
     ],
@@ -40,10 +40,10 @@ export const DOMAINS: Domain[] = [
     title: 'Claude Code Configuration & Workflows',
     weight: 20,
     subtopics: [
-      'CLAUDE.md Hierarchy & Configuration',
-      'Custom Commands & Skills',
+      'CLAUDE.md & Memory System',
+      'Skills & Custom Commands',
       'Plan Mode & Iterative Refinement',
-      'CI/CD Integration & Batch Processing',
+      'CI/CD & Batch Workflows',
     ],
     scenario: 'Claude Code for CI/CD',
     questionCount: 5,
