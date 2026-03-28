@@ -57,7 +57,7 @@ export const QUESTIONS: Question[] = [
       'Claude Code crashes',
     ],
     correct: 1,
-    explanation: 'Exit code 1 (any non-zero, non-2) blocks the tool call and sends the hook stdout back to Claude as additional context, allowing Claude to adjust its approach. Exit code 2 surfaces the message to the user instead.',
+    explanation: 'Exit code 1 (any non-zero, non-2) blocks the tool call and sends the hook stdout back to Claude as additional context, allowing Claude to adjust its approach. Exit code 2 is a blocking error that sends the hook\'s stderr to Claude as a forced error message.',
   },
   {
     id: 'd1-5',
