@@ -7,7 +7,7 @@ const STORAGE_KEY = 'architect-prep'
 
 beforeEach(() => localStorageMock.clear())
 
-// Question counts per domain: d1=8, d2=6, d3=7, d4=7, d5=7 — total 35
+// Question counts per domain: d1=15, d2=6, d3=15, d4=7, d5=7 — total 50
 
 describe('usePractice — initial state', () => {
   it('starts with filter "all"', () => {
@@ -15,9 +15,9 @@ describe('usePractice — initial state', () => {
     expect(result.current.filter).toBe('all')
   })
 
-  it('loads all 35 questions when filter is "all"', () => {
+  it('loads all 50 questions when filter is "all"', () => {
     const { result } = renderHook(() => usePractice())
-    expect(result.current.questions).toHaveLength(35)
+    expect(result.current.questions).toHaveLength(50)
   })
 
   it('starts with empty answers and zero counts', () => {
@@ -35,7 +35,7 @@ describe('usePractice — handleFilterChange', () => {
     act(() => { result.current.handleFilterChange('d1') })
 
     expect(result.current.filter).toBe('d1')
-    expect(result.current.questions).toHaveLength(8)
+    expect(result.current.questions).toHaveLength(15)
     result.current.questions.forEach((q) => expect(q.domain).toBe('d1'))
   })
 
@@ -52,14 +52,14 @@ describe('usePractice — handleFilterChange', () => {
     expect(result.current.correctCount).toBe(0)
   })
 
-  it('switching back to "all" loads all 35 questions', () => {
+  it('switching back to "all" loads all 50 questions', () => {
     const { result } = renderHook(() => usePractice())
 
     act(() => { result.current.handleFilterChange('d3') })
-    expect(result.current.questions).toHaveLength(7)
+    expect(result.current.questions).toHaveLength(15)
 
     act(() => { result.current.handleFilterChange('all') })
-    expect(result.current.questions).toHaveLength(35)
+    expect(result.current.questions).toHaveLength(50)
   })
 })
 
@@ -138,6 +138,6 @@ describe('usePractice — quiz result persistence', () => {
     })
 
     const saved = JSON.parse(localStorageMock.getItem(STORAGE_KEY)!)
-    expect(saved.progress.d1.quiz).toEqual({ correct: 0, total: 8 })
+    expect(saved.progress.d1.quiz).toEqual({ correct: 0, total: 15 })
   })
 })
