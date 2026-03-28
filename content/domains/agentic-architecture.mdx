@@ -122,11 +122,22 @@ Use sub-agents by default. Upgrade to agent teams only when you need teammates t
 
 <SubtopicSection domainKey="d1" index={2} title="Hooks & Programmatic Enforcement">
 
-Claude Code **hooks** are shell commands that run at defined lifecycle points in every Claude Code session. They give you programmatic control over what Claude is allowed to do — and they enforce those constraints regardless of what the user asks Claude to do. Hooks are your primary mechanism for policy enforcement at the agentic layer.
+Claude Code **hooks** are commands that run at defined lifecycle points in every session, giving you programmatic control over Claude's behavior. Hooks enforce constraints regardless of what the user asks.
 
-Hooks are defined in `~/.claude/settings.json` under the `"hooks"` key. There are five hook types: `PreToolUse` (runs before any tool call), `PostToolUse` (runs after a tool call completes), `UserPromptSubmit` (runs when the user submits a message), `Stop` (runs when the session ends), and `Notification` (runs on certain events). For security enforcement, `PreToolUse` is the most important.
+Hooks are defined in `~/.claude/settings.json` under the `"hooks"` key. Claude Code now supports over 20 hook events grouped by category:
 
-Each hook receives a JSON context via stdin — for a `PreToolUse` hook on `Bash`, this includes the command Claude is about to run. The hook runs as a shell command and communicates back through its **exit code**: exit code 0 means allow, exit code 1 means block and return stdout to Claude (so Claude can adapt), and exit code 2 means block and show stdout to the user as an error message.
+| Category | Events |
+|----------|--------|
+| Session lifecycle | `SessionStart`, `SessionEnd`, `InstructionsLoaded` |
+| User input | `UserPromptSubmit`, `Stop`, `StopFailure` |
+| Tool execution | `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest` |
+| Subagents & Teams | `SubagentStart`, `SubagentStop`, `TeammateIdle`, `TaskCreated`, `TaskCompleted` |
+| Environment & Files | `CwdChanged`, `FileChanged`, `ConfigChange` |
+| Context management | `PreCompact`, `PostCompact` |
+| MCP integration | `Elicitation`, `ElicitationResult`, `Notification` |
+| Worktree management | `WorktreeCreate`, `WorktreeRemove` |
+
+For security enforcement, `PreToolUse` remains the most important — it fires before any tool call and can block it:
 
 ```json
 {
@@ -142,15 +153,33 @@ Each hook receives a JSON context via stdin — for a `PreToolUse` hook on `Bash
 }
 ```
 
-In the example above, if Claude attempts a `git push --force` targeting main, the hook exits with code 2, and the user sees "Force push to main is not allowed" immediately — preventing the dangerous command.
+**Exit code behavior:** exit 0 = allow; exit 2 = blocking error (action prevented, stderr sent to Claude); any other non-zero = non-blocking error (action allowed, output sent to Claude as context).
 
-Practical use cases beyond blocking commands include: enforcing code formatting (run prettier and exit 1 if changes were made), logging all tool calls to an audit file, requiring confirmation before network requests, and blocking writes to sensitive directories. Hooks run synchronously before the tool executes, making them genuinely preventative rather than reactive.
+**Hook implementation types** — hooks are no longer limited to shell commands:
+
+| Type | Description |
+|------|-------------|
+| `command` | Run a shell command (original) |
+| `http` | POST event JSON to an HTTP endpoint |
+| `prompt` | Send a prompt to Claude for evaluation |
+| `agent` | Spawn a sub-agent for verification |
+
+**Agent-teams hooks:** `TeammateIdle` (exit 2 = keep teammate working), `TaskCreated` and `TaskCompleted` (exit 2 = prevent state change and send error feedback to the agent).
+
+Practical use cases: enforcing code formatting before writes, auditing all tool calls to an external API, requiring test green before task completion, and handling `WorktreeCreate` for non-git VCS systems.
 
 <InlinePracticeQ
   question="A PreToolUse hook exits with code 2. What happens?"
-  options={["Claude retries the tool call", "The tool call is blocked and the user sees the hook's stdout message", "The tool call is blocked and Claude sees the hook's stdout as context", "The process terminates"]}
+  options={["Claude retries the tool call", "The tool call is blocked and Claude receives the hook's stderr as a forced error message", "The tool call is blocked and the user sees the hook's stdout message", "The process terminates"]}
   correct={1}
-  explanation="Exit code 2 blocks the tool call and surfaces the hook's stdout to the USER (not Claude) as a visible error message. Exit code 1 blocks the tool call and returns the output to Claude."
+  explanation="Exit code 2 blocks the tool call and sends the hook's stderr to Claude as a forced error message (not to the user). Exit code 1 also blocks the tool call but returns output to Claude as context rather than a forced error."
+/>
+
+<InlinePracticeQ
+  question="You want a hook that POSTs tool events to your team's audit API. Which hook implementation type should you use?"
+  options={["command", "prompt", "http", "agent"]}
+  correct={2}
+  explanation="The http hook type POSTs the event JSON to a specified HTTP endpoint. This is ideal for sending audit events to external services without writing a local shell script."
 />
 </SubtopicSection>
 
