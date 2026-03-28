@@ -1,33 +1,62 @@
 import { SubtopicSection } from '@/components/SubtopicSection'
 import { InlinePracticeQ } from '@/components/InlinePracticeQ'
 
-<SubtopicSection domainKey="d3" index={0} title="CLAUDE.md Hierarchy & Configuration">
+<SubtopicSection domainKey="d3" index={0} title="CLAUDE.md & Memory System">
 
-`CLAUDE.md` is Claude Code's persistent memory system — a set of markdown files that are automatically injected into every session, giving Claude the context it needs about your project without requiring you to explain it each time. Understanding the hierarchy and how to write effective `CLAUDE.md` files is one of the highest-leverage skills for Claude Code power users.
+`CLAUDE.md` is Claude Code's persistent instruction system — markdown files automatically injected at session start, giving Claude project context without re-explanation each session.
 
-There are **three levels** in the `CLAUDE.md` hierarchy, each scoped to a different level of your environment:
+**The CLAUDE.md hierarchy now has four levels:**
 
-1. **Global** (`~/.claude/CLAUDE.md`): Applied to every Claude Code session, regardless of project. Use it for personal conventions, preferred code style, and tools you always use.
-2. **Project root** (`<project-root>/CLAUDE.md`): Applied to all sessions within this project. Use it for project overview, tech stack, architecture patterns, build commands, and deployment steps.
-3. **Subdirectory** (`<subdir>/CLAUDE.md`): Applied when Claude is working within that directory. Use it for service-specific conventions, scoped rules, or module-specific context.
+1. **Enterprise/managed** (`/Library/Application Support/ClaudeCode/CLAUDE.md` on macOS, `/etc/claude-code/CLAUDE.md` on Linux): Deployed by organizations. Cannot be excluded by individual user settings.
+2. **Global** (`~/.claude/CLAUDE.md`): Applied to every session regardless of project.
+3. **Project root** (`<project-root>/CLAUDE.md`): Project-specific conventions, build commands, architecture.
+4. **Subdirectory** (`<subdir>/CLAUDE.md`): Scoped rules for a specific service or module.
 
-All three levels are loaded simultaneously and **merged**, with more specific files taking precedence over less specific ones. A subdirectory `CLAUDE.md` rule overrides the project root rule for the same area; the project root overrides the global config. This lets you set defaults globally and override them per-project or per-directory.
+More specific files take precedence on conflicts. All levels are additive — not mutually exclusive.
 
-What to put in a project `CLAUDE.md`:
-- Project purpose in 1–2 sentences
-- Tech stack and versions
-- How to run tests (`npm test`), build (`npm run build`), and start the dev server
-- Coding conventions: tabs vs spaces, naming patterns, import ordering
-- What NOT to do: directories that are off-limits, patterns to avoid
-- Key architectural decisions that Claude should know about
+**New: `.claude/rules/` directory** — break instructions into focused topic files without bloating a single CLAUDE.md. Files can include YAML frontmatter with a `paths` field to scope loading to specific file patterns:
 
-Keep `CLAUDE.md` concise. Every character in `CLAUDE.md` costs context window tokens on every session. A 10,000-token `CLAUDE.md` means 10,000 fewer tokens available for actual work. Aim for maximum signal, minimum noise. Use `@import other-file.md` syntax to split large configs into focused files without bloating the main file.
+```yaml
+---
+paths:
+  - "src/api/**/*.ts"
+---
+API handlers must validate all inputs before processing...
+```
+
+Path-scoped rules only load into context when Claude works with matching files — keeping context lean for unrelated work.
+
+**New: `@import` syntax** — `@README` or `@~/.claude/my-prefs.md` imports another file inline. Content is loaded at session start. Useful for splitting large configs without a `@import` call overhead on every file read.
+
+**New: `claudeMdExcludes`** — a glob pattern in `.claude/settings.local.json` that skips specific CLAUDE.md files. Useful in monorepos where adjacent teams' CLAUDE.md files are noisy or contradictory.
+
+**Auto memory — Claude's half of the memory system.** CLAUDE.md contains *your* instructions. Auto memory is *Claude* writing notes for itself — build commands it discovered, debugging patterns, architecture decisions it learned mid-session.
+
+- Stored at: `~/.claude/projects/<project>/memory/MEMORY.md`
+- First 200 lines of `MEMORY.md` load each session automatically
+- Topic files (e.g., `debugging.md`) load on demand when relevant
+- Toggle with `/memory` command or `autoMemoryEnabled: false` in settings
+- Requires Claude Code v2.1.59+
+
+| | CLAUDE.md | Auto memory |
+|-|-----------|-------------|
+| Author | You | Claude |
+| Contains | Instructions and rules you set | Learnings and patterns Claude discovered |
+| Loaded | Every session (full file) | First 200 lines of MEMORY.md |
+| Use for | Standards, architecture, workflows | Build commands, debugging insights |
 
 <InlinePracticeQ
   question="A project CLAUDE.md and a subdirectory CLAUDE.md both define instructions for the same area. Which takes precedence?"
   options={["The global ~/.claude/CLAUDE.md", "The project-root CLAUDE.md", "The subdirectory CLAUDE.md", "They are merged with equal priority"]}
   correct={2}
   explanation="More specific (closer to the working directory) CLAUDE.md files take precedence. The subdirectory CLAUDE.md overrides the project root CLAUDE.md for that directory."
+/>
+
+<InlinePracticeQ
+  question="What is Claude Code auto memory?"
+  options={["A feature that backs up CLAUDE.md to the cloud", "Notes that Claude writes for itself across sessions, stored in ~/.claude/projects/<project>/memory/", "An AI-generated summary of the current session", "A way to import external documentation into CLAUDE.md"]}
+  correct={1}
+  explanation="Auto memory is Claude's self-written notes — build commands, debugging patterns, architecture decisions it discovered. It's separate from CLAUDE.md (which you write). The MEMORY.md entrypoint loads the first 200 lines each session."
 />
 </SubtopicSection>
 
