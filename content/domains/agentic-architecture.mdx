@@ -46,27 +46,77 @@ A common mistake is forgetting that both the assistant's tool_use message and th
 />
 </SubtopicSection>
 
-<SubtopicSection domainKey="d1" index={1} title="Multi-Agent Orchestration">
+<SubtopicSection domainKey="d1" index={1} title="Sub-agents & Agent Teams">
 
-Single-agent loops work well for focused tasks, but complex workflows benefit from **multi-agent architectures** where an orchestrator coordinates multiple specialized subagents. The orchestrator is responsible for decomposing a large task into subtasks, dispatching subagents to handle each one, and aggregating their outputs into a coherent result.
+Claude Code treats **sub-agents** as first-class citizens in multi-agent systems. A sub-agent is a specialized AI assistant that runs in its own context window with its own system prompt, specific tool access, and independent permissions — completely isolated from the parent conversation.
 
-The key design principle is **subagent isolation**: each subagent should receive only the context needed for its specific subtask, not the full conversation history. This approach reduces token costs, improves focus, and prevents information from one task leaking into another. A subagent analyzing database performance doesn't need to know about the UI redesign subtask happening in parallel.
+**Built-in sub-agents** are available in every session:
 
-**Parallel execution** is where multi-agent architectures truly shine. When subtasks are independent — meaning their outputs don't depend on each other — you can dispatch multiple subagents simultaneously. Each runs its own tool loop, and the orchestrator waits for all of them to complete before aggregating results. This can dramatically reduce wall-clock time for complex workflows.
+| Agent | Model | Tools | Best for |
+|-------|-------|-------|---------|
+| `Explore` | Haiku | Read-only | Fast codebase search and file discovery |
+| `Plan` | Inherits | Read-only | Architecture research during plan mode |
+| `general-purpose` | Inherits | All | Complex multi-step tasks |
 
-In Claude Code specifically, the `Agent` tool spawns subagents with a given prompt and tool set. For parallel work, you can use `run_in_background` to fire off multiple Agent tasks without waiting for each to complete. The orchestrator subagents run concurrently and the results are collected when all finish.
+**Custom sub-agents** are defined as a markdown file with YAML frontmatter in `.claude/agents/<name>.md`:
 
-Subagent results should be **structured and explicit**. Returning a JSON object with well-defined fields makes aggregation straightforward. If a subagent fails, it should return a structured error (not an exception) so the orchestrator can decide whether to retry, reassign, or escalate.
+```yaml
+---
+name: code-reviewer
+description: Use after completing a feature to review code for correctness, security, and test coverage. Invoked automatically when user asks to review code.
+model: sonnet
+permissionMode: acceptEdits
+maxTurns: 20
+tools: [Read, Grep, Glob]
+---
+You are an expert code reviewer. Analyze the provided code for...
+```
 
-One challenge with orchestration is **managing context growth**. Each subagent conversation is a separate API call chain, but the orchestrator's own context grows as it receives results. Design subagent return values to be concise summaries, not verbose transcripts. The orchestrator synthesizes; subagents execute.
+Key frontmatter fields:
 
-A common pattern is the **map-reduce agent**: the orchestrator splits input into chunks, dispatches a subagent per chunk (map phase), then synthesizes the results (reduce phase). This scales well for large-document analysis, codebase audits, and batch transformations.
+| Field | Purpose |
+|-------|---------|
+| `description` | Drives automatic delegation — Claude reads this to decide when to delegate |
+| `model` | `sonnet`, `opus`, `haiku`, full model ID, or `inherit` |
+| `permissionMode` | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |
+| `maxTurns` | Cap on agentic turns |
+| `tools` / `disallowedTools` | Allowlist / denylist of tools |
+| `isolation: worktree` | Run in a temporary git worktree — prevents file conflicts with parallel agents |
+| `skills` | Preload full skill content at startup (not just descriptions) |
+| `mcpServers` | Scope MCP servers to this sub-agent only |
+| `memory` | `user`, `project`, or `local` — persistent cross-session memory |
+| `background` | `true` = always run as a background task |
+| `effort` | Override effort level (`low/medium/high/max`) |
+
+**Invocation methods** (explicit to automatic):
+1. `@"code-reviewer (agent)"` — guaranteed delegation via @-mention
+2. Natural language: "Use the code-reviewer sub-agent to check this"
+3. `--agent code-reviewer` CLI flag — run the whole session as that agent
+4. Automatic — Claude reads the description and delegates when it matches
+
+**Agent teams** (experimental — requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) coordinate multiple full Claude Code instances. Unlike sub-agents, teammates communicate *directly with each other*, not just back to the orchestrator:
+
+| | Sub-agents | Agent teams |
+|-|-----------|-------------|
+| Communication | Report to caller only | Direct inter-agent messaging |
+| Coordination | Caller manages all work | Shared task list, self-coordinating |
+| Best for | Focused parallel tasks, results only | Debate, synthesis, agents challenging each other |
+| Token cost | Lower | Significantly higher |
+
+Use sub-agents by default. Upgrade to agent teams only when you need teammates to challenge each other's findings or share intermediate results before the orchestrator aggregates them.
 
 <InlinePracticeQ
   question="In a multi-agent system, what is the recommended approach for providing context to each subagent?"
   options={["Pass the full conversation history to maximize context", "Give each subagent only the context needed for its specific subtask", "Share a global context object that all subagents can read and write", "Let subagents request additional context on demand"]}
   correct={1}
   explanation="Subagents should receive only the context needed for their specific task. This reduces token costs, improves focus, and prevents information leakage between independent subtasks."
+/>
+
+<InlinePracticeQ
+  question="Which permissionMode setting allows a sub-agent to execute operations without any approval prompts?"
+  options={["default", "acceptEdits", "bypassPermissions", "plan"]}
+  correct={2}
+  explanation="bypassPermissions skips all permission prompts. acceptEdits auto-approves file edits but still prompts for shell commands and other operations. plan mode is read-only until the user approves a plan."
 />
 </SubtopicSection>
 
