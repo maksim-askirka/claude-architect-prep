@@ -5,7 +5,7 @@ Free, open-access study tool for the [Claude Certified Architect – Foundations
 ## Features
 
 - **5 domain deep-dives** — Agentic Architecture, Tool Design & MCP, Claude Code Config, Prompt Engineering, Context Management
-- **35 practice questions** — filterable by domain with immediate answer feedback
+- **50 practice questions** — filterable by domain with immediate answer feedback
 - **12-week study plan** — ~84 hours total, with per-week tasks and resource links
 - **6 exam scenario walkthroughs** — step-by-step analysis of real exam patterns
 - **4 build exercises** — hands-on practice prompts
