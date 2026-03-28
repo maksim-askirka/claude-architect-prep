@@ -47,6 +47,16 @@ const FAQ = [
   },
 ]
 
+const OFFICIAL_COURSES = [
+  { name: 'Claude Code in Action', domain: 'D3', url: 'https://anthropic.skilljar.com' },
+  { name: 'Introduction to agent skills', domain: 'D1', url: 'https://anthropic.skilljar.com' },
+  { name: 'Introduction to subagents', domain: 'D1', url: 'https://anthropic.skilljar.com' },
+  { name: 'Introduction to Model Context Protocol', domain: 'D2', url: 'https://anthropic.skilljar.com' },
+  { name: 'Model Context Protocol: Advanced Topics', domain: 'D2', url: 'https://anthropic.skilljar.com' },
+  { name: 'Building with the Claude API', domain: 'D1 / D4', url: 'https://anthropic.skilljar.com' },
+  { name: 'AI Fluency: Framework & Foundations', domain: 'D4 / D5', url: 'https://anthropic.skilljar.com' },
+]
+
 export default function ExamGuidePage() {
   return (
     <div>
@@ -108,6 +118,35 @@ export default function ExamGuidePage() {
             <div key={i} className="border border-[var(--border)] p-4">
               <div className="text-sm font-semibold mb-2">{item.q}</div>
               <p className="text-xs text-[var(--text)] leading-6">{item.a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Official Courses */}
+      <div className="mt-8">
+        <div className="text-[11px] uppercase tracking-widest text-[var(--muted)] mb-1">official_courses/</div>
+        <p className="text-xs text-[var(--muted)] mb-4">Free courses from Anthropic Academy that directly cover exam domains.</p>
+        <div className="border border-[var(--border)]">
+          {OFFICIAL_COURSES.map((course) => (
+            <div
+              key={course.name}
+              className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] last:border-b-0"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[var(--text)]">{course.name}</span>
+                <span className="text-[10px] uppercase tracking-widest text-[var(--teal)] bg-[var(--teal-bg)] px-2 py-0.5">
+                  {course.domain}
+                </span>
+              </div>
+              <a
+                href={course.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-[var(--teal)] hover:underline"
+              >
+                open →
+              </a>
             </div>
           ))}
         </div>
