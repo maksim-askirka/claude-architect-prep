@@ -146,6 +146,17 @@ Plan mode is most valuable for:
 
 The investment in reviewing a plan before execution pays back in dramatically fewer iteration cycles.
 
+**`--permission-mode plan` CLI flag** starts a new session directly in plan mode. Useful for automated analysis: `claude --permission-mode plan -p "Analyze the auth system for security gaps"`.
+
+**`Ctrl+G`** opens the current plan in your default text editor for direct editing before Claude proceeds.
+
+**Effort levels affect plan depth:** Using `ultrathink` in the planning prompt, or setting effort to `high`, gives Claude more thinking tokens for complex plans.
+
+**Configure plan mode as a project default:**
+```json
+{ "permissions": { "defaultMode": "plan" } }
+```
+
 <InlinePracticeQ
   question="In plan mode, Claude reads several files and is ready to present its implementation approach. Which tool does it use to exit plan mode?"
   options={["ExitPlanMode", "AskUserQuestion", "Bash with 'exit'", "It exits automatically after reading files"]}
@@ -171,6 +182,19 @@ Common CI/CD use cases:
 - **Documentation updates**: detect code changes and regenerate affected documentation sections
 
 The key principle for CI integration: **always use `--allowedTools` to enforce the principle of least privilege**. A CI Claude that can only read is far safer than one with full Bash access, even if you trust the workflow.
+
+**`/batch` skill** is the first-class tool for large-scale parallel changes. Instead of manually orchestrating multiple Claude sessions, `/batch "migrate src/ from Solid to React"` decomposes the work into independent units (5–30), spawns one background agent per unit in an isolated git worktree, each agent runs tests, and opens a PR. Requires a git repository.
+
+**Scheduling options:**
+
+| Option | Where it runs | Best for |
+|--------|--------------|---------|
+| Cloud scheduled tasks | Anthropic infrastructure | Persist when machine is off |
+| Desktop scheduled tasks | Your local machine | Local file access, uncommitted changes |
+| GitHub Actions | CI pipeline | Tied to repository events |
+| `/loop` | Current CLI session | Quick polling while session is open |
+
+Cloud scheduled tasks are configured via `claude.ai/code` or the `/schedule` command. Desktop tasks run through the Desktop app.
 
 <InlinePracticeQ
   question="You're running Claude Code in a CI pipeline that should only be able to read files, not write or execute commands. How do you enforce this?"
