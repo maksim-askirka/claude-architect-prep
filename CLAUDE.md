@@ -43,7 +43,7 @@ All user progress lives in `localStorage` under the key `architect-prep`. `lib/p
 - `hooks/useProgress.ts` — full `ProgressData` with `reload` and `reset`
 - `hooks/useStudyPlan.ts` — narrow slice (`studyPlan` map) with `toggleWeek`
 
-Both hooks use a `useState({}) → useEffect(hydrate)` pattern to avoid SSR mismatches.
+Both hooks use a `useState({}) → useEffect(hydrate)` pattern to avoid SSR mismatches. The `react-hooks/set-state-in-effect` lint rule fires on the `setState` call inside the effect body — suppress it with `// eslint-disable-next-line react-hooks/set-state-in-effect` on the line immediately before the `setState` call (not before `useEffect`).
 
 ### `'use client'` pages need a layout.tsx for metadata
 
@@ -66,6 +66,8 @@ Always use `var(--token)` for colors, never hard-code hex values.
 ### Tests
 
 `__tests__/components/` (React Testing Library), `__tests__/lib/` (pure unit tests), and `__tests__/hooks/` (renderHook tests). Jest + jsdom. `@/` path alias resolves to the repo root.
+
+Jest config is `jest.config.mjs` (ESM). Do not use `.ts` (requires `ts-node`, not installed) or `.js` (`require()` is forbidden by ESLint).
 
 Run `npm test` before marking any task complete.
 
