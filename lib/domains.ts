@@ -15,7 +15,7 @@ export const DOMAINS: Domain[] = [
       'Session Management & Workflows',
     ],
     scenario: 'Multi-Agent Research System',
-    questionCount: 6,
+    questionCount: 15,
   },
   {
     key: 'd2',
@@ -46,7 +46,7 @@ export const DOMAINS: Domain[] = [
       'CI/CD & Batch Workflows',
     ],
     scenario: 'Claude Code for CI/CD',
-    questionCount: 5,
+    questionCount: 15,
   },
   {
     key: 'd4',

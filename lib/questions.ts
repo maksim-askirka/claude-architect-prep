@@ -268,7 +268,7 @@ export const QUESTIONS: Question[] = [
     explanation: 'Agents should only have access to the tools they need for their task. Exposing unnecessary tools (especially Bash) increases blast radius and security risk.',
   },
 
-  // D3: Claude Code Configuration (7 questions)
+  // D3: Claude Code Configuration (15 questions)
   {
     id: 'd3-1',
     domain: 'd3',
