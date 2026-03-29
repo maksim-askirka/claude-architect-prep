@@ -1,7 +1,6 @@
 // __tests__/components/DomainFilter.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
 import { DomainFilter } from '@/components/DomainFilter'
-import { DomainKey } from '@/types'
 
 describe('DomainFilter', () => {
   it('renders All button and 5 domain buttons', () => {

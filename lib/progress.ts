@@ -1,5 +1,5 @@
 // lib/progress.ts
-import { DomainKey, DomainProgress, ProgressData } from '@/types'
+import { DomainKey, ProgressData } from '@/types'
 
 const STORAGE_KEY = 'architect-prep'
 
