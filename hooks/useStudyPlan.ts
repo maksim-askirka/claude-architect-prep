@@ -7,6 +7,7 @@ export function useStudyPlan() {
   const [completedWeeks, setCompletedWeeks] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCompletedWeeks(getProgress().studyPlan)
   }, [])
 

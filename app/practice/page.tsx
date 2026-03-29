@@ -26,7 +26,7 @@ export default function PracticePage() {
 
       {/* Questions */}
       {questions.length === 0 ? (
-        <p className="text-sm text-[var(--muted)]">// no questions match this filter</p>
+        <p className="text-sm text-[var(--muted)]">No questions match this filter</p>
       ) : (
         <div className="flex flex-col gap-4">
           {questions.map((q) => (

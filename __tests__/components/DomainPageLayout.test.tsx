@@ -5,7 +5,7 @@ import type { Domain } from '@/types'
 const mockDomain: Domain = {
   key: 'd1',
   slug: 'agentic-architecture',
-  number: 1,
+  number: '01',
   title: 'Agentic Architecture',
   weight: 27,
   subtopics: ['Multi-agent patterns', 'Orchestration'],
@@ -38,7 +38,7 @@ describe('DomainPageLayout', () => {
         <p>content</p>
       </DomainPageLayout>
     )
-    expect(screen.getByText(/\b1\b/)).toBeInTheDocument()
+    expect(screen.getByText(/01/)).toBeInTheDocument()
   })
 
   it('renders a breadcrumb link to dashboard', () => {

@@ -1,6 +1,7 @@
 // __tests__/components/SubtopicSection.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react'
 import { SubtopicSection } from '@/components/SubtopicSection'
+import { setSubtopicComplete } from '@/lib/progress'
 
 // Mock lib/progress
 jest.mock('@/lib/progress', () => ({
@@ -49,7 +50,6 @@ describe('SubtopicSection', () => {
   })
 
   it('calls setSubtopicComplete with correct args', () => {
-    const { setSubtopicComplete } = require('@/lib/progress')
     render(
       <SubtopicSection domainKey="d3" index={2} title="Test">
         <p>Content</p>

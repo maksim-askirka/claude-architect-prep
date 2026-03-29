@@ -16,6 +16,7 @@ export function SubtopicSection({ domainKey, index, title, children }: SubtopicS
 
   useEffect(() => {
     const data = getProgress()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setComplete(data.progress[domainKey].subtopics[index] ?? false)
   }, [domainKey, index])
 

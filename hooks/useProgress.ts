@@ -16,8 +16,8 @@ export function useProgress() {
     setData(getProgress())
   }, [])
 
-  // Re-read on mount (handles SSR/hydration)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     reload()
   }, [reload])
 
